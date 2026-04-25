@@ -5,85 +5,82 @@ export interface Project {
   longDescription: string;
   technologies: string[];
   githubUrl: string;
+  demoUrl?: string;
   highlights: string[];
 }
 
 export const projects: Project[] = [
   {
-    id: "ncent",
-    title: "NCent - Enterprise HR & Operations System",
-    description: "Full-stack enterprise system with real-time chat, complex payroll engine, and fine-grained RBAC",
+    id: "insurance-product-showcase",
+    title: "Insurance Product Showcase",
+    description: "Insurance product listing and showcase platform built with TypeScript",
     longDescription:
-      "Enterprise HR & Operations system serving 2,000+ employees. Features include real-time WebSocket chat with presence tracking, Day Resolution & Payroll Engine with multi-layer policy cascades, fine-grained RBAC with triple-token authentication, and full-lifecycle Asset Management with automated depreciation.",
-    technologies: ["Angular 19", "Laravel 11", "WebSocket", "MySQL", "JWT", "AES-256-GCM"],
-    githubUrl: "https://github.com/tasuke567",
+      "A modern insurance product showcase platform featuring product listings, filtering, and detailed product pages. Built with TypeScript for type safety and modern frontend practices.",
+    technologies: ["TypeScript", "React", "Tailwind CSS"],
+    githubUrl: "https://github.com/tasuke567/Insurance-Product-Showcase",
+    // demoUrl: "https://insurance-product-showcase.vercel.app", // uncomment after deploying to Vercel
     highlights: [
-      "4-layer architecture (Controller-Service-Repository-Model)",
-      "Real-time chat with auto-reconnect and presence tracking",
-      "Complex payroll engine with policy cascades",
-      "Fine-grained RBAC system with 15+ protective modules",
-      "Automated asset depreciation calculations",
+      "Insurance product catalog with filtering",
+      "Responsive design for all devices",
+      "TypeScript for type-safe development",
     ],
   },
   {
-    id: "blog-cms",
-    title: "Blog CMS with Performance Optimization",
-    description: "Secure blog platform with performance optimization and monitoring",
+    id: "insurance-policy-portal",
+    title: "Insurance Policy Portal",
+    description: "Web portal for managing and viewing insurance policies",
     longDescription:
-      "Full-stack blog CMS built with modern tech stack. Features secure JWT authentication, Prisma ORM, optimized frontend performance with Core Web Vitals focus, and GCP Cloud Logging for monitoring.",
-    technologies: ["Next.js", "Express", "Prisma", "JWT", "GCP", "Redis"],
-    githubUrl: "https://github.com/tasuke567",
+      "A web portal for insurance policy management built with HTML. Features policy listing, details view, and user-friendly interface for policy information.",
+    technologies: ["HTML", "CSS", "JavaScript"],
+    githubUrl: "https://github.com/tasuke567/Insurance-Policy-Portal",
+    // demoUrl: "https://tasuke567.github.io/Insurance-Policy-Portal", // uncomment after enabling GitHub Pages
     highlights: [
-      "Secure Blog CMS with Express and Prisma",
-      "Frontend performance optimization (Core Web Vitals)",
-      "GCP Cloud Logging integration",
-      "Redis caching",
-      "Lighthouse score optimization",
+      "Policy listing and detail views",
+      "Clean and accessible UI",
+      "Lightweight with no framework dependencies",
     ],
   },
   {
-    id: "real-estate",
-    title: "Real Estate Web Apps",
-    description: "Modern real estate applications with GCP deployment and CI/CD automation",
+    id: "gopher-wallet",
+    title: "GopherWallet",
+    description: "Digital wallet application built with Go",
     longDescription:
-      "End-to-end real estate web applications built with modern tech stack. Deployed on GCP Cloud Run with automated CI/CD pipeline through Cloud Build.",
-    technologies: ["Next.js", "Node.js", "GCP Cloud Run", "GCP Cloud Build", "GitHub Actions"],
-    githubUrl: "https://github.com/tasuke567",
+      "A backend digital wallet application built with Go. Handles wallet operations, transactions, and balance management with clean Go architecture.",
+    technologies: ["Go", "REST API"],
+    githubUrl: "https://github.com/tasuke567/GopherWallet",
     highlights: [
-      "Full-stack real estate platform",
-      "GCP Cloud Run deployment",
-      "Automated CI/CD with Cloud Build",
-      "GitHub Actions integration",
+      "Go backend with clean architecture",
+      "Wallet and transaction management",
+      "RESTful API design",
     ],
   },
   {
-    id: "watermark-api",
-    title: "Watermark API",
-    description: "Image watermarking service with Redis caching and GCS integration",
+    id: "org-chart-app",
+    title: "Org Chart App",
+    description: "Interactive organizational chart application built with TypeScript",
     longDescription:
-      "FastAPI-based watermarking service with Redis caching and Google Cloud Storage integration. Built for high-performance image processing.",
-    technologies: ["FastAPI", "Python", "GCS", "Redis", "GCP"],
-    githubUrl: "https://github.com/tasuke567",
+      "An interactive organizational chart application that visualizes company hierarchy and team structures. Built with TypeScript for robust data management.",
+    technologies: ["TypeScript", "React"],
+    githubUrl: "https://github.com/tasuke567/org-chart-app",
+    // demoUrl: "https://org-chart-app.vercel.app", // uncomment after deploying to Vercel
     highlights: [
-      "FastAPI backend for high performance",
-      "Redis caching for optimized throughput",
-      "Google Cloud Storage integration",
-      "Async image processing",
+      "Interactive org chart visualization",
+      "Dynamic hierarchy management",
+      "TypeScript for type-safe data structures",
     ],
   },
   {
-    id: "friend-recommendation",
-    title: "Friend Recommendation PoC",
-    description: "Graph-based recommendation engine with Neo4j and GraphQL",
+    id: "todo-list",
+    title: "TODOList",
+    description: "Task management application",
     longDescription:
-      "Proof of concept for friend recommendations using Neo4j graph database and GraphQL API. Demonstrates graph query patterns and real-time recommendation logic.",
-    technologies: ["Neo4j", "GraphQL", "Spring Boot", "Redis", "Java"],
-    githubUrl: "https://github.com/tasuke567",
+      "A task management application for organizing and tracking daily tasks. Features task creation, completion tracking, and clean UI.",
+    technologies: ["TypeScript"],
+    githubUrl: "https://github.com/tasuke567/TODOList",
     highlights: [
-      "Neo4j graph database for relationship mapping",
-      "GraphQL API with Spring Boot",
-      "Redis caching for recommendations",
-      "Graph-based recommendation algorithm",
+      "Task creation and management",
+      "Completion tracking",
+      "Simple and intuitive UI",
     ],
   },
 ];

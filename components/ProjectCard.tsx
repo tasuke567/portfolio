@@ -35,14 +35,26 @@ export function ProjectCard({ project }: { project: Project }) {
         </ul>
       </div>
 
-      <a
-        href={project.githubUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
-      >
-        View on GitHub →
-      </a>
+      <div className="flex gap-3 flex-wrap">
+        <a
+          href={project.githubUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+        >
+          View on GitHub →
+        </a>
+        {project.demoUrl && (
+          <a
+            href={project.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block border border-zinc-900 dark:border-white text-zinc-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            Live Demo ↗
+          </a>
+        )}
+      </div>
     </div>
   );
 }
