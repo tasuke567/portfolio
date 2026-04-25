@@ -1,0 +1,17 @@
+{
+  "env": {
+    "NEXT_PUBLIC_SITE_URL": "@site_url"
+  },
+  "redirects": [
+    {
+      "source": "/github",
+      "destination": "https://github.com/tasuke567",
+      "permanent": false
+    },
+    {
+      "source": "/linkedin",
+      "destination": "https://linkedin.com/in/tasuke567",
+      "permanent": false
+    }
+  ]
+}

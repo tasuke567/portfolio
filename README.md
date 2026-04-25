@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WeyDev - Full-Stack Developer Portfolio
 
-## Getting Started
+Welcome to my professional portfolio website! This site showcases my projects and technical expertise in full-stack development.
 
-First, run the development server:
+## 🚀 Quick Start
+
+### Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+├── app/
+│   ├── layout.tsx          # Root layout with Header/Footer
+│   ├── page.tsx            # Home page with hero & projects
+│   └── globals.css         # Global styles
+├── components/
+│   ├── Header.tsx          # Navigation header
+│   ├── Footer.tsx          # Footer with links
+│   └── ProjectCard.tsx     # Project card component
+├── lib/
+│   └── projects.ts         # Projects data
+├── public/                 # Static assets
+├── DEPLOYMENT.md           # Deployment guide
+└── PROJECTS_GUIDE.md       # How to add projects
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 Managing Projects
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See [PROJECTS_GUIDE.md](./PROJECTS_GUIDE.md) for detailed instructions.
 
-## Deploy on Vercel
+Quick example:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```typescript
+// lib/projects.ts
+export const projects: Project[] = [
+  {
+    id: "my-project",
+    title: "My Project Title",
+    description: "One-line description",
+    longDescription: "Detailed description...",
+    technologies: ["React", "Node.js"],
+    githubUrl: "https://github.com/tasuke567/project",
+    highlights: ["Feature 1", "Feature 2"],
+  },
+];
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🌐 Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. Push to GitHub
+2. Go to [vercel.com](https://vercel.com)
+3. Import this repository
+4. Add custom domain `weydev.com`
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+## ✨ Features
+
+- 📱 Responsive design (mobile, tablet, desktop)
+- 🌙 Dark mode support
+- ⚡ Fast performance (static generation)
+- 🎨 Modern UI with Tailwind CSS
+- 🔍 SEO optimized
+- 📄 TypeScript for type safety
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
+
+## 📚 Resources
+
+- [Next.js Docs](https://nextjs.org/docs)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- [Vercel Docs](https://vercel.com/docs)
+
+## 📧 Contact
+
+- Email: tasuke567@gmail.com
+- GitHub: [@tasuke567](https://github.com/tasuke567)
+- LinkedIn: [@tasuke567](https://linkedin.com/in/tasuke567)
+
+---
+
+Built with ❤️ by Thapanakorn Yotyothinkul
