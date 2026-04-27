@@ -1,7 +1,4 @@
 {
-  "env": {
-    "NEXT_PUBLIC_SITE_URL": "@site_url"
-  },
   "redirects": [
     {
       "source": "/github",
