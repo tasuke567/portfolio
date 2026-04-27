@@ -2,7 +2,7 @@ export function Footer() {
   return (
     <footer className="bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-8">
           <div>
             <h4 className="font-semibold text-zinc-900 dark:text-white mb-4">
               Connect

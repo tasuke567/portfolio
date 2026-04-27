@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Resume — Thapanakorn Yotyothinkul",
@@ -54,16 +55,27 @@ export default function ResumePage() {
   return (
     <main className="flex flex-col flex-1 bg-white dark:bg-black">
       {/* Header */}
-      <section className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-black dark:to-zinc-900 py-20 px-6 border-b border-zinc-200 dark:border-zinc-800">
+      <section className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-black dark:to-zinc-900 py-16 px-6 border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2">
-              Resume
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-2">
-              Thapanakorn Yotyothinkul
-            </h1>
-            <p className="text-xl text-zinc-600 dark:text-zinc-400">Full-Stack Developer</p>
+          <div className="flex items-center gap-6">
+            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg">
+              <Image
+                src="/avatar.png"
+                alt="Thapanakorn Yotyothinkul"
+                fill
+                className="object-cover object-top"
+                priority
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2">
+                Resume
+              </p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-2">
+                Thapanakorn Yotyothinkul
+              </h1>
+              <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400">Full-Stack Developer</p>
+            </div>
           </div>
           <div className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400">
             <a href="mailto:tasuke567@gmail.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
@@ -151,6 +163,39 @@ export default function ResumePage() {
               <p className="text-zinc-600 dark:text-zinc-400">
                 Rajamangala University of Technology Krungthep
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Languages & Personal */}
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-8 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            Languages & Personal
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white">Thai</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Native</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white">English</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Professional — Reading: Good · Speaking: Fair</span>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="flex gap-3">
+                <span className="font-semibold text-zinc-900 dark:text-white w-24 shrink-0">Nationality</span>
+                <span>Thai</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="font-semibold text-zinc-900 dark:text-white w-24 shrink-0">Location</span>
+                <span>Bangkok, Thailand</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="font-semibold text-zinc-900 dark:text-white w-24 shrink-0">Availability</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">Open to full-time & freelance</span>
+              </div>
             </div>
           </div>
         </section>

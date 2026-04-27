@@ -29,15 +29,15 @@ Vercel is the official deployment platform for Next.js and makes it super easy.
 3. Click "New Project"
 4. Select your GitHub repository
 5. Vercel will auto-detect Next.js and set up the build
-6. Add your custom domain `weydev.com`:
+6. Add your custom domain `www.weydev.com`:
    - In Vercel dashboard, go to Settings → Domains
-   - Add `weydev.com`
+   - Add `www.weydev.com`
    - Follow DNS configuration instructions
 
 #### Environment Variables
 Add in Vercel dashboard > Settings > Environment Variables:
 ```
-NEXT_PUBLIC_SITE_URL=https://weydev.com
+NEXT_PUBLIC_SITE_URL=https://www.weydev.com
 ```
 
 ### Option 2: Traditional Hosting (Node.js required)
@@ -99,7 +99,7 @@ npm run start
 
 ## DNS Setup for weydev.com
 
-If you own `weydev.com`, point it to your hosting:
+If you own `www.weydev.com`, point it to your hosting:
 
 **For Vercel:**
 - Update your domain registrar DNS to point to Vercel nameservers
@@ -137,5 +137,5 @@ PORT=3001 npm run dev
 1. ✅ Build and test locally: `npm run build && npm run start`
 2. ✅ Push to GitHub
 3. ✅ Deploy to Vercel (recommended)
-4. ✅ Configure domain `weydev.com`
+4. ✅ Configure domain `www.weydev.com`
 5. ✅ Add projects to `lib/projects.ts` as needed
