@@ -9,15 +9,27 @@ export const metadata: Metadata = {
 
 const experience = [
   {
-    role: "Full-Stack Developer",
+    role: "Lead Full-stack Developer & DevOps Engineer",
+    company: "MEKS (Monitoring & Entertainment Key System)",
+    period: "Jan 2026 — Present",
+    highlights: [
+      "Engineered a high-performance live stream monitoring system using Rust (Axum, Tokio) for real-time processing of high-volume TikTok gift events and battle status.",
+      "Developed a sleek standalone desktop interface using Dioxus and Tailwind CSS, delivering a native experience with web-tier design aesthetics.",
+      "Architected a robust WebSocket orchestration layer for real-time data broadcasting and ranking synchronization between server and multiple clients.",
+      "Built a custom application launcher and environment manager in Rust to handle complex host configurations and process lifecycles automatically.",
+      "Designed and implemented a fully automated CI/CD pipeline using GitHub Actions and PowerShell for automated versioning, building, and NSIS installer generation.",
+    ],
+  },
+  {
+    role: "Senior Frontend Developer / System Architect",
     company: "NC Entertainment Co., Ltd.",
     period: "Jan 2026 — Present",
     highlights: [
-      "Developed NCent, an enterprise HR & Operations system using Angular 19 (Standalone) and Laravel 11 with a strict 4-layer architecture.",
-      "Engineered a real-time chat system via WebSocket with auto-reconnect, presence tracking, and server/channel/DM architecture.",
-      "Built a high-complexity Day Resolution & Payroll Engine handling multi-layer policy cascades, shift-aware biometric matching, and automated holiday resolution for 2,000+ employees.",
-      "Implemented fine-grained RBAC with a triple-token auth system (JWT + AES-256-GCM) and URL-based permission guards across 15+ modules.",
-      "Developed a full-lifecycle Asset Management system with automated depreciation calculation (Straight-line/Chaining) and TikTok Live revenue tracking.",
+      "Architected and developed NCENT, an enterprise ERP/HRMS platform serving 2,000+ employees, using Angular 19 and a modular standalone component architecture.",
+      "Implemented a premium design system based on TITAN UI guidelines using Tailwind CSS, Angular Material, and PrimeNG for a consistent enterprise experience.",
+      "Engineered complex business logic engines for payroll, day resolution, and KPI analytics handling large-scale employee data.",
+      "Utilized advanced RxJS patterns for high-performance state management and seamless data flow across 15+ integrated modules.",
+      "Integrated secure authentication and fine-grained RBAC permissions using Firebase Auth and URL-based guards.",
     ],
   },
   {
@@ -43,12 +55,12 @@ const experience = [
 ];
 
 const skills = [
-  { category: "Languages", items: ["TypeScript", "PHP", "Java", "Python", "SQL"] },
-  { category: "Frontend", items: ["Next.js (React)", "Angular", "Tailwind CSS", "RxJS"] },
-  { category: "Backend", items: ["Node.js", "Express", "NestJS", "Spring Boot", "GraphQL", "REST API"] },
-  { category: "Databases", items: ["MySQL", "PostgreSQL", "MongoDB", "SQLite", "Neo4j", "Redis"] },
-  { category: "DevOps", items: ["Docker", "GCP Cloud Run", "GCP Cloud Build", "Nginx", "GitHub Actions"] },
-  { category: "Tools", items: ["Prisma", "Jest", "Postman", "GA4 / GTM", "DBeaver"] },
+  { category: "Languages", items: ["TypeScript", "Rust", "Go", "PHP", "Java", "Python", "SQL"] },
+  { category: "Frontend", items: ["Next.js", "Angular 19", "Dioxus", "Tailwind CSS", "RxJS", "PrimeNG"] },
+  { category: "Backend", items: ["Axum", "Tokio", "Node.js", "NestJS", "Laravel 11", "Spring Boot", "GraphQL"] },
+  { category: "Databases", items: ["PostgreSQL", "MySQL", "Firebase", "MongoDB", "SQLite", "Neo4j", "Redis"] },
+  { category: "DevOps", items: ["Docker", "GCP Cloud Run & Build", "Nginx", "GitHub Actions", "PowerShell", "NSIS"] },
+  { category: "Tools", items: ["Prisma", "Transloco", "Jest", "Postman", "GA4 / GTM", "DBeaver"] },
 ];
 
 export default function ResumePage() {

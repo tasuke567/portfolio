@@ -12,19 +12,35 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: "ncent-system",
-    title: "NCent — HR & Operations System",
-    description: "Enterprise HR & Operations platform serving 2,000+ employees with real-time chat and a complex payroll engine.",
+    id: "meks-app",
+    title: "MEKS — Live Streaming Management",
+    description: "High-performance desktop application for real-time TikTok live stream analysis and management using Rust.",
     longDescription:
-      "A comprehensive enterprise HR & Operations system built with Angular 19 (Standalone) and Laravel 11, implementing a strict 4-layer architecture (Controller–Service–Repository–Model). Features a real-time WebSocket chat system with auto-reconnect, presence tracking, and server/channel/DM architecture; a high-complexity Day Resolution & Payroll Engine handling multi-layer policy cascades and shift-aware biometric matching; fine-grained RBAC with triple-token auth (JWT + AES-256-GCM); and a full-lifecycle Asset Management module with automated depreciation (Straight-line/Chaining) and TikTok Live revenue tracking integration.",
-    technologies: ["Angular 19", "Laravel 11", "WebSocket", "JWT", "AES-256-GCM", "MySQL"],
+      "A comprehensive desktop application designed for real-time monitoring and management of live streaming data (TikTok). Built with a high-performance Rust backend using Axum and Tokio to handle intensive gift events and battle/PK status with minimal latency. The frontend features a sleek, standalone desktop UI built with the Dioxus framework and Tailwind CSS. Key features include a robust WebSocket orchestration for real-time data broadcasting, a custom application launcher for environment management, and a fully automated CI/CD pipeline generating installers via NSIS and GitHub Actions.",
+    technologies: ["Rust", "Dioxus", "Axum", "Tokio", "WebSocket", "SQLite", "Tailwind CSS", "GitHub Actions"],
     isPrivate: true,
     highlights: [
-      "Real-time chat with auto-reconnect, presence tracking, and DM/channel architecture",
-      "Payroll Engine with multi-layer policy cascades and shift-aware biometric matching",
-      "Fine-grained RBAC with triple-token auth across 15+ protective modules",
-      "Automated asset depreciation (Straight-line & Chaining methods)",
-      "Serves 2,000+ employees in production",
+      "High-performance Rust backend for low-latency real-time data processing",
+      "Modern standalone desktop UI built with Dioxus and Tailwind CSS",
+      "Real-time WebSocket orchestration for accurate live data synchronization",
+      "Custom Rust-based launcher for automated environment and lifecycle management",
+      "Automated CI/CD pipeline for versioning, building, and installer creation (NSIS)",
+    ],
+  },
+  {
+    id: "ncent-system",
+    title: "NCENT — HR & Operations System",
+    description: "Enterprise ERP/HRMS platform serving 2,000+ employees with real-time chat and a complex payroll engine.",
+    longDescription:
+      "An enterprise-scale HR & Operations Management System (HRMS) built using the Fuse Angular Admin Template and following strict TITAN UI guidelines. The system features a modular architecture with standalone components for managing employee shifts, expenses, and KPI analytics. It implements advanced state management with RxJS, secure authentication via Firebase, and high-complexity engines for payroll and day resolution. Designed for high scalability, it serves over 2,000 employees with a premium, user-centric interface.",
+    technologies: ["Angular 19", "TypeScript", "Tailwind CSS", "RxJS", "Firebase", "Transloco", "Laravel 11"],
+    isPrivate: true,
+    highlights: [
+      "Modular architecture using Angular Standalone Components",
+      "Premium UI/UX following TITAN UI guidelines for a sleek, enterprise feel",
+      "Real-time chat and complex payroll engine handling 2,000+ employees",
+      "Advanced state management and data flow using RxJS",
+      "Integrated multi-language support and fine-grained RBAC permissions",
     ],
   },
   {

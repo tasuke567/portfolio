@@ -148,7 +148,7 @@ export default function Home() {
                 Background
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400 mb-4 leading-relaxed">
-                Full-stack developer based in Bangkok, Thailand. Currently building NCent — an
+                Full-stack developer based in Bangkok, Thailand. Currently building NCENT — an
                 enterprise HR & Operations system serving 2,000+ employees — at NC Entertainment
                 Co., Ltd.
               </p>
@@ -171,10 +171,10 @@ export default function Home() {
               </h3>
               <div className="space-y-5">
                 {[
-                  { label: 'Frontend', value: 'Next.js, React, Angular 19, Tailwind CSS, RxJS' },
-                  { label: 'Backend', value: 'Node.js, Express, NestJS, Laravel 11, Spring Boot, GraphQL' },
-                  { label: 'Databases', value: 'PostgreSQL, MySQL, MongoDB, Redis, Neo4j' },
-                  { label: 'DevOps', value: 'Docker, GCP Cloud Run & Build, Nginx, GitHub Actions' },
+                  { label: 'Languages', value: 'TypeScript, Rust, Go, PHP, Java, Python' },
+                  { label: 'Frontend', value: 'Next.js, Angular 19, Dioxus, Tailwind CSS, RxJS' },
+                  { label: 'Backend', value: 'Axum, Tokio, Node.js, NestJS, Laravel 11' },
+                  { label: 'Databases', value: 'PostgreSQL, MySQL, Firebase, Redis, Neo4j' },
                 ].map((item) => (
                   <div key={item.label} className="flex gap-4">
                     <span className="text-sm font-semibold text-zinc-900 dark:text-white w-24 shrink-0 pt-0.5">
