@@ -9,26 +9,26 @@ export function Header() {
         </Link>
         <nav className="flex gap-6 items-center">
           <Link
-            href="/"
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-          >
-            Home
-          </Link>
-          <Link
-            href="#projects"
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            href="/#projects"
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-sm"
           >
             Projects
           </Link>
           <Link
-            href="#about"
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            href="/#about"
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-sm"
           >
             About
           </Link>
+          <Link
+            href="/resume"
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-sm"
+          >
+            Resume
+          </Link>
           <a
-            href="mailto:tasuke567@gmail.com"
-            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+            href="/#contact"
+            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors text-sm"
           >
             Contact
           </a>

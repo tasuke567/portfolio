@@ -15,13 +15,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thapanakorn Yotyothinkul - Full-Stack Developer",
+  title: {
+    default: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+    template: "%s — Thapanakorn Yotyothinkul",
+  },
   description:
-    "Full-stack developer building scalable enterprise systems with modern tech stack. Portfolio showcasing projects in Angular, React, Node.js, and cloud deployment.",
+    "Full-stack developer based in Bangkok, Thailand. Specializing in Angular, React, Laravel, Node.js, and cloud platforms (GCP, Docker). Open to new opportunities.",
+  keywords: [
+    "full-stack developer",
+    "Angular",
+    "React",
+    "Next.js",
+    "Laravel",
+    "Node.js",
+    "TypeScript",
+    "GCP",
+    "Bangkok",
+    "Thailand",
+  ],
+  authors: [{ name: "Thapanakorn Yotyothinkul" }],
   openGraph: {
-    title: "Thapanakorn Yotyothinkul - Full-Stack Developer",
-    description: "Full-stack developer portfolio",
+    title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+    description:
+      "Full-stack developer specializing in Angular, React, Laravel, Node.js, and cloud platforms.",
     url: "https://weydev.com",
+    siteName: "WeyDev",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+    description:
+      "Full-stack developer specializing in Angular, React, Laravel, Node.js, and cloud platforms.",
   },
 };
 

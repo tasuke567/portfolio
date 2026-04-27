@@ -1,0 +1,160 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Resume — Thapanakorn Yotyothinkul",
+  description:
+    "Full-stack developer with experience in Angular, React, Laravel, Node.js, and cloud platforms. View my work history, technical skills, and education.",
+};
+
+const experience = [
+  {
+    role: "Full-Stack Developer",
+    company: "NC Entertainment Co., Ltd.",
+    period: "Jan 2026 — Present",
+    highlights: [
+      "Developed NCent, an enterprise HR & Operations system using Angular 19 (Standalone) and Laravel 11 with a strict 4-layer architecture.",
+      "Engineered a real-time chat system via WebSocket with auto-reconnect, presence tracking, and server/channel/DM architecture.",
+      "Built a high-complexity Day Resolution & Payroll Engine handling multi-layer policy cascades, shift-aware biometric matching, and automated holiday resolution for 2,000+ employees.",
+      "Implemented fine-grained RBAC with a triple-token auth system (JWT + AES-256-GCM) and URL-based permission guards across 15+ modules.",
+      "Developed a full-lifecycle Asset Management system with automated depreciation calculation (Straight-line/Chaining) and TikTok Live revenue tracking.",
+    ],
+  },
+  {
+    role: "Full-Stack Developer",
+    company: "The Brain Stem Co., Ltd.",
+    period: "Jun 2025 — Dec 2025",
+    highlights: [
+      "Led end-to-end development of real estate web apps using Next.js, Node.js, and GCP (Cloud Run/Build) with automated CI/CD.",
+      "Built a secure Blog CMS with Express, Prisma, and JWT; optimized frontend performance (Core Web Vitals / Lighthouse).",
+      "Developed a Watermark API (FastAPI, Python, GCS) featuring Redis caching.",
+      "Established production monitoring with GCP Cloud Logging.",
+    ],
+  },
+  {
+    role: "Frontend Development Intern",
+    company: "Business Online Public Company Limited",
+    period: "Nov 2024 — Mar 2025",
+    highlights: [
+      "Built internal portals using Angular and RxJS; integrated LIFF for LINE app messaging flows.",
+      "Developed a Friend Recommendation PoC using Neo4j, GraphQL (Spring Boot), and Redis.",
+    ],
+  },
+];
+
+const skills = [
+  { category: "Languages", items: ["TypeScript", "PHP", "Java", "Python", "SQL"] },
+  { category: "Frontend", items: ["Next.js (React)", "Angular", "Tailwind CSS", "RxJS"] },
+  { category: "Backend", items: ["Node.js", "Express", "NestJS", "Spring Boot", "GraphQL", "REST API"] },
+  { category: "Databases", items: ["MySQL", "PostgreSQL", "MongoDB", "SQLite", "Neo4j", "Redis"] },
+  { category: "DevOps", items: ["Docker", "GCP Cloud Run", "GCP Cloud Build", "Nginx", "GitHub Actions"] },
+  { category: "Tools", items: ["Prisma", "Jest", "Postman", "GA4 / GTM", "DBeaver"] },
+];
+
+export default function ResumePage() {
+  return (
+    <main className="flex flex-col flex-1 bg-white dark:bg-black">
+      {/* Header */}
+      <section className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-black dark:to-zinc-900 py-20 px-6 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2">
+              Resume
+            </p>
+            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-2">
+              Thapanakorn Yotyothinkul
+            </h1>
+            <p className="text-xl text-zinc-600 dark:text-zinc-400">Full-Stack Developer</p>
+          </div>
+          <div className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <a href="mailto:tasuke567@gmail.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
+              tasuke567@gmail.com
+            </a>
+            <a href="https://github.com/tasuke567" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
+              github.com/tasuke567
+            </a>
+            <a href="https://linkedin.com/in/tasuke567" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
+              linkedin.com/in/tasuke567
+            </a>
+            <span>Bangkok, Thailand</span>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-4xl mx-auto w-full px-6 py-16 space-y-16">
+        {/* Experience */}
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-8 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            Experience
+          </h2>
+          <div className="space-y-10">
+            {experience.map((job) => (
+              <div key={job.company} className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-8">
+                <div className="md:col-span-1">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">{job.period}</p>
+                </div>
+                <div className="md:col-span-3">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{job.role}</h3>
+                  <p className="text-zinc-600 dark:text-zinc-400 mb-3">{job.company}</p>
+                  <ul className="space-y-2">
+                    {job.highlights.map((item, idx) => (
+                      <li key={idx} className="flex gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Skills */}
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-8 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            Technical Skills
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {skills.map((group) => (
+              <div key={group.category}>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+                  {group.category}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <span
+                      key={item}
+                      className="inline-block bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-3 py-1 rounded-full text-sm"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Education */}
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-8 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            Education
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-8">
+            <div className="md:col-span-1">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">2021 — 2025</p>
+            </div>
+            <div className="md:col-span-3">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                B.S. in Computer Science
+              </h3>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                Rajamangala University of Technology Krungthep
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
