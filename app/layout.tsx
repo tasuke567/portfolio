@@ -14,40 +14,71 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = "https://www.weydev.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
     default: "Thapanakorn Yotyothinkul — Full-Stack Developer",
     template: "%s — Thapanakorn Yotyothinkul",
   },
   description:
-    "Full-stack developer based in Bangkok, Thailand. Specializing in Angular, React, Laravel, Node.js, and cloud platforms (GCP, Docker). Open to new opportunities.",
+    "Full-stack developer based in Bangkok, Thailand. Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms. Open to new opportunities.",
   keywords: [
+    "Thapanakorn Yotyothinkul",
     "full-stack developer",
     "Angular",
     "React",
     "Next.js",
     "Laravel",
     "Node.js",
+    "Rust",
     "TypeScript",
+    "NestJS",
     "GCP",
+    "Docker",
     "Bangkok",
     "Thailand",
+    "portfolio",
   ],
-  authors: [{ name: "Thapanakorn Yotyothinkul" }],
+  authors: [{ name: "Thapanakorn Yotyothinkul", url: BASE_URL }],
+  creator: "Thapanakorn Yotyothinkul",
+  alternates: {
+    canonical: BASE_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
     description:
-      "Full-stack developer specializing in Angular, React, Laravel, Node.js, and cloud platforms.",
-    url: "https://weydev.com",
-    siteName: "WeyDev",
+      "Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms. Based in Bangkok, Thailand.",
+    url: BASE_URL,
+    siteName: "Thapanakorn Yotyothinkul",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
     description:
-      "Full-stack developer specializing in Angular, React, Laravel, Node.js, and cloud platforms.",
+      "Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms.",
+    images: ["/og-image.png"],
   },
 };
 

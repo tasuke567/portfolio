@@ -29,7 +29,7 @@ export function RevealFadeUp({
   return (
     <motion.div
       ref={ref}
-      style={{ opacity, y }}
+      style={{ opacity, y, position: 'relative' }}
       transition={{ delay }}
       className={className}
     >
@@ -50,7 +50,7 @@ export function RevealScale({
   const scale = useTransform(progress, [0, 0.5], [0.92, 1])
 
   return (
-    <motion.div ref={ref} style={{ opacity, scale }} className={className}>
+    <motion.div ref={ref} style={{ opacity, scale, position: 'relative' }} className={className}>
       {children}
     </motion.div>
   )
@@ -74,7 +74,7 @@ export function RevealSlide({
   )
 
   return (
-    <motion.div ref={ref} style={{ opacity, x }} className={className}>
+    <motion.div ref={ref} style={{ opacity, x, position: 'relative' }} className={className}>
       {children}
     </motion.div>
   )
