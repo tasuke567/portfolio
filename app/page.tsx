@@ -51,27 +51,32 @@ export default function Home() {
       />
       <ScrollProgress />
 
-      {/* Hero Section — Editorial Minimal */}
-      <section className="relative bg-white overflow-hidden min-h-screen flex flex-col justify-between px-8 sm:px-12 lg:px-16">
-        <div className="pt-10">
+      {/* Hero Section — Editorial Minimal (Refined) */}
+      <section className="relative bg-white overflow-hidden min-h-screen flex flex-col px-8 sm:px-12 lg:px-16">
+        {/* Name eyebrow */}
+        <div className="pt-12 pb-0 flex-none">
           <HeroText delay={0.0}>
             <p className="text-[11px] font-medium text-zinc-400 tracking-[0.3em] uppercase">
               Thapanakorn Yotyothinkul
             </p>
+            <div className="mt-5 border-t border-zinc-100" />
           </HeroText>
         </div>
 
-        <div className="py-4">
+        {/* Giant title — dominant focal point */}
+        <div className="flex-1 flex items-center">
           <HeroText delay={0.15}>
-            <h1 className="text-[clamp(3.5rem,10.5vw,9.5rem)] font-black text-zinc-900 leading-[0.88] tracking-[-0.04em] max-w-[82%]">
+            <h1 className="text-[clamp(4rem,12vw,11rem)] font-black text-zinc-900 leading-[0.85] tracking-[-0.05em] max-w-[88%]">
               Full-Stack<br />Developer
             </h1>
           </HeroText>
         </div>
 
-        <div className="pb-16">
+        {/* Bottom — description + CTAs pinned */}
+        <div className="pb-20 flex-none">
+          <div className="border-t border-zinc-100 mb-8" />
           <HeroText delay={0.3}>
-            <p className="text-sm text-zinc-500 mb-8 max-w-xs leading-relaxed">
+            <p className="text-sm text-zinc-500 mb-8 max-w-xs leading-loose">
               Building scalable enterprise systems with modern tech stack.
               Expertise in Angular, React, Node.js, and cloud deployment.
             </p>
@@ -80,7 +85,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-3 items-start">
               <a
                 href="#projects"
-                className="w-full sm:w-auto bg-zinc-900 text-white px-8 py-3.5 rounded-full font-semibold hover:bg-zinc-700 transition-colors text-center text-sm"
+                className="w-full sm:w-auto bg-zinc-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-zinc-700 transition-colors text-center text-sm"
               >
                 View Projects
               </a>
@@ -88,7 +93,7 @@ export default function Home() {
                 href="https://github.com/tasuke567"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto border border-zinc-300 text-zinc-900 px-8 py-3.5 rounded-full font-semibold hover:border-zinc-900 transition-colors text-center text-sm"
+                className="w-full sm:w-auto border border-zinc-200 text-zinc-600 px-8 py-3.5 rounded-full font-medium hover:border-zinc-900 hover:text-zinc-900 transition-colors text-center text-sm"
               >
                 GitHub
               </a>
@@ -98,21 +103,21 @@ export default function Home() {
       </section>
 
       {/* Stats Bar */}
-      <section className="py-14 px-6 border-y border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black">
+      <section className="py-16 sm:py-20 px-6 border-y border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black">
         <div className="max-w-4xl mx-auto">
           <RevealFadeUp>
-            <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
-              <div>
-                <p className="text-2xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-1">3+</p>
-                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Years exp.</p>
+            <div className="grid grid-cols-3 divide-x divide-zinc-100 dark:divide-zinc-800 text-center">
+              <div className="px-4 sm:px-10">
+                <p className="text-5xl sm:text-7xl font-black text-zinc-900 dark:text-white mb-2 tracking-tight">3+</p>
+                <p className="text-xs sm:text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Years exp.</p>
               </div>
-              <div>
-                <p className="text-2xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-1">10+</p>
-                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Projects</p>
+              <div className="px-4 sm:px-10">
+                <p className="text-5xl sm:text-7xl font-black text-zinc-900 dark:text-white mb-2 tracking-tight">10+</p>
+                <p className="text-xs sm:text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Projects</p>
               </div>
-              <div>
-                <p className="text-2xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-1">2K+</p>
-                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Employees served</p>
+              <div className="px-4 sm:px-10">
+                <p className="text-5xl sm:text-7xl font-black text-zinc-900 dark:text-white mb-2 tracking-tight">2K+</p>
+                <p className="text-xs sm:text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Served</p>
               </div>
             </div>
           </RevealFadeUp>
@@ -123,17 +128,17 @@ export default function Home() {
       <section id="projects" className="py-28 px-6 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-4xl mx-auto">
           <RevealFadeUp>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
+            <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-5">
               Work
             </p>
             <h2 className="text-3xl sm:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
               Featured Projects
             </h2>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-16 max-w-lg">
+            <p className="text-base text-zinc-500 dark:text-zinc-400 mb-16 max-w-lg leading-relaxed">
               A selection of projects showcasing my expertise in full-stack development.
             </p>
           </RevealFadeUp>
-          <div className="grid grid-cols-1 gap-5">
+          <div className="grid grid-cols-1 gap-6">
             {projects.map((project) => (
               <RevealScale key={project.id}>
                 <ProjectCard project={project} />
@@ -147,68 +152,69 @@ export default function Home() {
       <section id="about" className="py-28 px-6 bg-white dark:bg-black">
         <div className="max-w-4xl mx-auto">
           <RevealFadeUp>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
+            <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-5">
               About
             </p>
-            <h2 className="text-3xl sm:text-5xl font-bold text-zinc-900 dark:text-white mb-10 md:mb-16 tracking-tight">
+            <h2 className="text-3xl sm:text-5xl font-bold text-zinc-900 dark:text-white mb-12 md:mb-16 tracking-tight">
               About Me
             </h2>
           </RevealFadeUp>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <RevealSlide direction="left">
-              <div className="flex items-center gap-5 mb-8">
-                <div className="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-lg">
+              <div className="flex items-start gap-5 mb-10">
+                <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-md ring-1 ring-zinc-100 dark:ring-zinc-800">
                   <Image
                     src="/avatar.png"
                     alt="Thapanakorn Yotyothinkul"
                     fill
-                    sizes="80px"
+                    sizes="96px"
                     className="object-cover object-top"
                   />
                 </div>
-                <div>
-                  <p className="font-semibold text-zinc-900 dark:text-white">Thapanakorn Yotyothinkul</p>
+                <div className="pt-1">
+                  <p className="font-bold text-zinc-900 dark:text-white mb-1">Thapanakorn Yotyothinkul</p>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">Bangkok, Thailand</p>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Thai · English</p>
+                  <p className="text-sm text-zinc-400 dark:text-zinc-500">Thai · English</p>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-5">
+              <div className="border-t border-zinc-100 dark:border-zinc-800 mb-8" />
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 uppercase tracking-[0.15em]">
                 Background
               </h3>
-              <p className="text-zinc-600 dark:text-zinc-400 mb-4 leading-relaxed">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 leading-loose">
                 Full-stack developer based in Bangkok, Thailand. Currently building NCENT — an
                 enterprise HR & Operations system serving 2,000+ employees — at NC Entertainment
                 Co., Ltd.
               </p>
-              <p className="text-zinc-600 dark:text-zinc-400 mb-8 leading-relaxed">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-10 leading-loose">
                 B.S. in Computer Science, Rajamangala University of Technology Krungthep (2021–2025).
                 Focused on clean architecture, scalable backend systems, and production-grade
                 frontend performance.
               </p>
               <a
                 href="/resume"
-                className="inline-flex items-center gap-2 text-zinc-900 dark:text-white font-semibold hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-zinc-900 dark:text-white font-bold text-sm hover:gap-3 transition-all group"
               >
                 View Full Resume
-                <span>→</span>
+                <span className="transition-transform group-hover:translate-x-1">→</span>
               </a>
             </RevealSlide>
             <RevealSlide direction="right">
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-5">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-6 uppercase tracking-[0.15em]">
                 Technical Stack
               </h3>
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {[
                   { label: 'Languages', value: 'TypeScript, Rust, Go, PHP, Java, Python' },
                   { label: 'Frontend', value: 'Next.js, Angular 19, Dioxus, Tailwind CSS, RxJS' },
                   { label: 'Backend', value: 'Axum, Tokio, Node.js, NestJS, Laravel 11' },
                   { label: 'Databases', value: 'PostgreSQL, MySQL, Firebase, Redis, Neo4j' },
                 ].map((item) => (
-                  <div key={item.label} className="flex gap-4">
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-white w-24 shrink-0 pt-0.5">
+                  <div key={item.label} className="flex gap-6">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white w-20 shrink-0 pt-0.5 uppercase tracking-wide">
                       {item.label}
                     </span>
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       {item.value}
                     </span>
                   </div>
@@ -223,17 +229,17 @@ export default function Home() {
       <section id="contact" className="py-28 px-6 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-4xl mx-auto">
           <RevealScale>
-            <div className="rounded-3xl bg-zinc-900 p-8 sm:p-12 md:p-16">
+            <div className="rounded-3xl bg-zinc-900 ring-1 ring-white/[0.07] p-8 sm:p-12 md:p-16">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-10">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 bg-emerald-500/15 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full mb-5 ring-1 ring-emerald-500/25">
+                  <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-xs font-medium px-3 py-1 rounded-full mb-6 ring-1 ring-emerald-500/20">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Open to opportunities
                   </span>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white mb-4 tracking-tight leading-tight">
                     Let&apos;s work<br />together
                   </h2>
-                  <p className="text-zinc-400 max-w-sm leading-relaxed">
+                  <p className="text-zinc-500 max-w-sm leading-loose text-sm">
                     Full-time role, freelance project, or just a conversation —
                     feel free to reach out. I respond within 24 hours.
                   </p>
@@ -241,7 +247,7 @@ export default function Home() {
                 <div className="flex flex-col gap-3 shrink-0 min-w-[200px]">
                   <a
                     href="mailto:tasuke567@gmail.com"
-                    className="inline-flex items-center justify-center gap-2 bg-white text-zinc-900 px-6 py-3.5 rounded-full font-semibold hover:bg-zinc-100 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-zinc-900 px-6 py-3.5 rounded-full font-bold hover:bg-zinc-100 transition-colors text-sm"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -253,7 +259,7 @@ export default function Home() {
                       href="https://github.com/tasuke567"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 border border-white/15 text-zinc-300 px-4 py-3 rounded-full font-medium hover:border-white hover:text-white transition-colors text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-2 border border-zinc-700 text-zinc-400 px-4 py-3 rounded-full font-medium hover:border-zinc-500 hover:text-zinc-200 transition-colors text-sm"
                     >
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -264,7 +270,7 @@ export default function Home() {
                       href="https://linkedin.com/in/tasuke567"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 border border-white/15 text-zinc-300 px-4 py-3 rounded-full font-medium hover:border-white hover:text-white transition-colors text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-2 border border-zinc-700 text-zinc-400 px-4 py-3 rounded-full font-medium hover:border-zinc-500 hover:text-zinc-200 transition-colors text-sm"
                     >
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
