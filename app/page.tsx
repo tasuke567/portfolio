@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ProjectCard } from "@/components/ProjectCard";
 import { HeroTitle } from "@/components/HeroTitle";
+import { TransitionLink } from "@/components/TransitionLink";
 import {
   HeroText,
   RevealFadeUp,
@@ -54,13 +55,13 @@ export default function Home() {
 
       {/* Hero Section — Editorial Minimal (Refined) */}
       <section className="relative bg-white overflow-hidden min-h-screen flex flex-col px-8 sm:px-12 lg:px-16">
-        {/* Name eyebrow */}
+        {/* Name eyebrow — short accent divider from Stitch */}
         <div className="pt-12 pb-0 flex-none">
           <HeroText delay={0.0}>
-            <p className="text-[11px] font-medium text-zinc-400 tracking-[0.3em] uppercase">
+            <p className="text-[10px] font-bold text-zinc-400 tracking-[0.4em] uppercase mb-3">
               Thapanakorn Yotyothinkul
             </p>
-            <div className="mt-5 border-t border-zinc-100" />
+            <div className="h-px w-8 bg-zinc-200" />
           </HeroText>
         </div>
 
@@ -69,33 +70,46 @@ export default function Home() {
           <HeroTitle className="text-[clamp(4rem,12vw,11rem)] font-black leading-[0.85] tracking-[-0.05em] max-w-[88%]" />
         </div>
 
-        {/* Bottom — description + CTAs pinned */}
+        {/* Bottom — 2-col grid: description+CTAs left | status right */}
         <div className="pb-20 flex-none">
-          <div className="border-t border-zinc-100 mb-8" />
-          <HeroText delay={0.3}>
-            <p className="text-sm text-zinc-500 mb-8 max-w-xs leading-loose">
-              Building scalable enterprise systems with modern tech stack.
-              Expertise in Angular, React, Node.js, and cloud deployment.
-            </p>
-          </HeroText>
-          <HeroText delay={0.42}>
-            <div className="flex flex-col sm:flex-row gap-3 items-start">
-              <a
-                href="#projects"
-                className="w-full sm:w-auto bg-zinc-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-zinc-700 transition-colors text-center text-sm"
-              >
-                View Projects
-              </a>
-              <a
-                href="https://github.com/tasuke567"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto border border-zinc-200 text-zinc-600 px-8 py-3.5 rounded-full font-medium hover:border-zinc-900 hover:text-zinc-900 transition-colors text-center text-sm"
-              >
-                GitHub
-              </a>
+          <div className="w-full h-px bg-zinc-100 mb-10" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
+            <div>
+              <HeroText delay={0.3}>
+                <p className="text-sm text-zinc-500 mb-8 max-w-xs leading-loose">
+                  Building scalable enterprise systems with modern tech stack.
+                  Expertise in Angular, React, Node.js, and cloud deployment.
+                </p>
+              </HeroText>
+              <HeroText delay={0.42}>
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href="#projects"
+                    className="bg-zinc-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-zinc-700 transition-all active:scale-95 text-sm uppercase tracking-widest"
+                  >
+                    View Projects
+                  </a>
+                  <a
+                    href="https://github.com/tasuke567"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-zinc-200 text-zinc-500 px-8 py-3.5 rounded-full font-bold hover:border-zinc-400 hover:text-zinc-900 transition-all active:scale-95 text-sm uppercase tracking-widest"
+                  >
+                    GitHub
+                  </a>
+                </div>
+              </HeroText>
             </div>
-          </HeroText>
+            {/* Availability badge — Stitch asymmetric balance */}
+            <HeroText delay={0.55}>
+              <div className="hidden md:flex justify-end pb-1">
+                <div className="inline-flex items-center gap-2.5 border border-zinc-100 text-zinc-400 px-5 py-2.5 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse" />
+                  Available for projects
+                </div>
+              </div>
+            </HeroText>
+          </div>
         </div>
       </section>
 
@@ -188,13 +202,13 @@ export default function Home() {
                 Focused on clean architecture, scalable backend systems, and production-grade
                 frontend performance.
               </p>
-              <a
+              <TransitionLink
                 href="/resume"
                 className="inline-flex items-center gap-2 text-zinc-900 dark:text-white font-bold text-sm hover:gap-3 transition-all group"
               >
                 View Full Resume
                 <span className="transition-transform group-hover:translate-x-1">→</span>
-              </a>
+              </TransitionLink>
             </RevealSlide>
             <RevealSlide direction="right">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-6 uppercase tracking-[0.15em]">

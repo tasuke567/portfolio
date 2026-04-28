@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PageTransitionProvider } from "@/components/PageTransition";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -95,9 +96,11 @@ export default function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
       </head>
       <body className="min-h-full flex flex-col bg-white dark:bg-black">
-        <Header />
-        {children}
-        <Footer />
+        <PageTransitionProvider>
+          <Header />
+          {children}
+          <Footer />
+        </PageTransitionProvider>
       </body>
     </html>
   );

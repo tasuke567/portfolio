@@ -1,8 +1,8 @@
 'use client'
 
-import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TransitionLink } from "./TransitionLink";
 
 const navLinks = [
   { href: "/#projects", label: "Projects" },
@@ -16,24 +16,24 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-zinc-200 dark:border-zinc-800">
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link
+        <TransitionLink
           href="/"
           className="text-xl font-bold text-zinc-900 dark:text-white"
           onClick={() => setOpen(false)}
         >
           WeyDev
-        </Link>
+        </TransitionLink>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-6 items-center">
           {navLinks.map((link) => (
-            <Link
+            <TransitionLink
               key={link.href}
               href={link.href}
               className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-sm"
             >
               {link.label}
-            </Link>
+            </TransitionLink>
           ))}
           <a
             href="/#contact"
@@ -79,14 +79,14 @@ export function Header() {
           >
             <nav className="flex flex-col px-6 py-4 gap-1">
               {navLinks.map((link) => (
-                <Link
+                <TransitionLink
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className="py-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-base border-b border-zinc-50 dark:border-zinc-900 last:border-0"
                 >
                   {link.label}
-                </Link>
+                </TransitionLink>
               ))}
               <a
                 href="/#contact"
