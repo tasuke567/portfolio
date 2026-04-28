@@ -46,6 +46,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  other: {
+    "google-site-verification": "",
+  },
+  icons: {
+    icon: "/icon",
+  },
   robots: {
     index: true,
     follow: true,
@@ -64,21 +70,12 @@ export const metadata: Metadata = {
     siteName: "Thapanakorn Yotyothinkul",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Thapanakorn Yotyothinkul — Full-Stack Developer",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
     description:
       "Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms.",
-    images: ["/og-image.png"],
   },
 };
 
@@ -91,7 +88,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
+      </head>
       <body className="min-h-full flex flex-col bg-white dark:bg-black">
         <Header />
         {children}

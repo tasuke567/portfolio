@@ -2,9 +2,42 @@ import type { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Resume — Thapanakorn Yotyothinkul",
+  title: "Resume",
   description:
-    "Full-stack developer with experience in Angular, React, Laravel, Node.js, and cloud platforms. View my work history, technical skills, and education.",
+    "Full-stack developer with experience in Angular, React, Laravel, Node.js, Rust, and cloud platforms. View my work history, technical skills, and education.",
+  alternates: {
+    canonical: "https://www.weydev.com/resume",
+  },
+  openGraph: {
+    title: "Resume — Thapanakorn Yotyothinkul",
+    description:
+      "View my work history, technical skills, and education. Full-stack developer based in Bangkok, Thailand.",
+    url: "https://www.weydev.com/resume",
+    type: "profile",
+  },
+  twitter: {
+    card: "summary",
+    title: "Resume — Thapanakorn Yotyothinkul",
+    description:
+      "View my work history, technical skills, and education. Full-stack developer based in Bangkok, Thailand.",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  name: "Resume — Thapanakorn Yotyothinkul",
+  url: "https://www.weydev.com/resume",
+  mainEntity: {
+    "@type": "Person",
+    name: "Thapanakorn Yotyothinkul",
+    jobTitle: "Full-Stack Developer",
+    url: "https://www.weydev.com",
+    sameAs: [
+      "https://github.com/tasuke567",
+      "https://linkedin.com/in/tasuke567",
+    ],
+  },
 };
 
 const experience = [
@@ -66,6 +99,10 @@ const skills = [
 export default function ResumePage() {
   return (
     <main className="flex flex-col flex-1 bg-white dark:bg-black">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header */}
       <section className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-black dark:to-zinc-900 py-16 px-6 border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6">
