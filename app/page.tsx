@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ProjectCard } from "@/components/ProjectCard";
+import { HeroTitle } from "@/components/HeroTitle";
 import {
   HeroText,
   RevealFadeUp,
@@ -65,11 +66,7 @@ export default function Home() {
 
         {/* Giant title — dominant focal point */}
         <div className="flex-1 flex items-center">
-          <HeroText delay={0.15}>
-            <h1 className="text-[clamp(4rem,12vw,11rem)] font-black text-zinc-900 leading-[0.85] tracking-[-0.05em] max-w-[88%]">
-              Full-Stack<br />Developer
-            </h1>
-          </HeroText>
+          <HeroTitle className="text-[clamp(4rem,12vw,11rem)] font-black leading-[0.85] tracking-[-0.05em] max-w-[88%]" />
         </div>
 
         {/* Bottom — description + CTAs pinned */}
