@@ -1,7 +1,13 @@
 'use client'
 
 import { useRef, ReactNode } from 'react'
-import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion'
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useReducedMotion,
+} from 'framer-motion'
 
 function useScrollReveal(once = true) {
   const ref = useRef<HTMLDivElement>(null)
@@ -22,9 +28,14 @@ export function RevealFadeUp({
   className?: string
   delay?: number
 }) {
+  const reduced = useReducedMotion()
   const { ref, progress } = useScrollReveal()
   const opacity = useTransform(progress, [0, 0.6], [0, 1])
   const y = useTransform(progress, [0, 0.6], [64, 0])
+
+  if (reduced) {
+    return <div className={className}>{children}</div>
+  }
 
   return (
     <motion.div
@@ -45,9 +56,14 @@ export function RevealScale({
   children: ReactNode
   className?: string
 }) {
+  const reduced = useReducedMotion()
   const { ref, progress } = useScrollReveal()
   const opacity = useTransform(progress, [0, 0.5], [0, 1])
   const scale = useTransform(progress, [0, 0.5], [0.92, 1])
+
+  if (reduced) {
+    return <div className={className}>{children}</div>
+  }
 
   return (
     <motion.div ref={ref} style={{ opacity, scale, position: 'relative' }} className={className}>
@@ -65,6 +81,7 @@ export function RevealSlide({
   className?: string
   direction?: 'left' | 'right'
 }) {
+  const reduced = useReducedMotion()
   const { ref, progress } = useScrollReveal()
   const opacity = useTransform(progress, [0, 0.6], [0, 1])
   const x = useTransform(
@@ -72,6 +89,10 @@ export function RevealSlide({
     [0, 0.6],
     [direction === 'left' ? -60 : 60, 0]
   )
+
+  if (reduced) {
+    return <div className={className}>{children}</div>
+  }
 
   return (
     <motion.div ref={ref} style={{ opacity, x, position: 'relative' }} className={className}>
@@ -109,12 +130,17 @@ export function ParallaxLayer({
   speed?: number
   className?: string
 }) {
+  const reduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
   const y = useTransform(scrollYProgress, [0, 1], ['0%', `${speed * 100}%`])
+
+  if (reduced) {
+    return <div className={className}>{children}</div>
+  }
 
   return (
     <motion.div ref={ref} style={{ y }} className={className}>
@@ -132,6 +158,12 @@ export function HeroText({
   className?: string
   delay?: number
 }) {
+  const reduced = useReducedMotion()
+
+  if (reduced) {
+    return <div className={className}>{children}</div>
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 32, filter: 'blur(8px)' }}
@@ -151,6 +183,7 @@ export function ScrollProgress() {
     <motion.div
       style={{ scaleX }}
       className="fixed top-0 left-0 right-0 h-[2px] bg-zinc-900 dark:bg-white origin-left z-[100]"
+      aria-hidden="true"
     />
   )
 }

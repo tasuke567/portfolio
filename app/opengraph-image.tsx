@@ -1,9 +1,11 @@
 import { ImageResponse } from "next/og";
+import { SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
-export const runtime = "edge";
-export const alt = "Thapanakorn Yotyothinkul — Full-Stack Developer";
+export const alt = SITE_TITLE;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const techs = ["Angular", "React", "Node.js", "Rust", "TypeScript"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -20,9 +22,9 @@ export default function OGImage() {
           fontFamily: "sans-serif",
         }}
       >
-        {/* Top: name eyebrow */}
         <div
           style={{
+            display: "flex",
             fontSize: 14,
             fontWeight: 500,
             color: "#a1a1aa",
@@ -30,12 +32,13 @@ export default function OGImage() {
             textTransform: "uppercase",
           }}
         >
-          THAPANAKORN YOTYOTHINKUL
+          {SITE_NAME.toUpperCase()}
         </div>
 
-        {/* Middle: giant title */}
         <div
           style={{
+            display: "flex",
+            flexDirection: "column",
             fontSize: 96,
             fontWeight: 900,
             color: "#18181b",
@@ -43,12 +46,10 @@ export default function OGImage() {
             letterSpacing: "-0.04em",
           }}
         >
-          Full-Stack
-          <br />
-          Developer
+          <span>Full-Stack</span>
+          <span>Developer</span>
         </div>
 
-        {/* Bottom: stack + URL */}
         <div
           style={{
             display: "flex",
@@ -57,28 +58,29 @@ export default function OGImage() {
           }}
         >
           <div style={{ display: "flex", gap: 8 }}>
-            {["Angular", "React", "Node.js", "Rust", "TypeScript"].map(
-              (tech) => (
-                <div
-                  key={tech}
-                  style={{
-                    background: "#f4f4f5",
-                    color: "#3f3f46",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    padding: "6px 14px",
-                    borderRadius: 999,
-                  }}
-                >
-                  {tech}
-                </div>
-              )
-            )}
+            {techs.map((tech) => (
+              <div
+                key={tech}
+                style={{
+                  display: "flex",
+                  background: "#f4f4f5",
+                  color: "#3f3f46",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                }}
+              >
+                {tech}
+              </div>
+            ))}
           </div>
-          <div style={{ fontSize: 14, color: "#a1a1aa" }}>weydev.com</div>
+          <div style={{ display: "flex", fontSize: 14, color: "#a1a1aa" }}>
+            {SITE_URL.replace(/^https?:\/\/(www\.)?/, "")}
+          </div>
         </div>
       </div>
     ),
-    { ...size }
+    { ...size },
   );
 }

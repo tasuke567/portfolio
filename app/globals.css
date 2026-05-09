@@ -22,10 +22,155 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+/* shiki via rehype-pretty-code: swap token colors by color scheme */
+pre code [style*="--shiki-light"] {
+  color: var(--shiki-light);
+}
+pre code [data-line] {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  pre code [style*="--shiki-dark"] {
+    color: var(--shiki-dark);
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm 14mm 12mm 14mm;
+  }
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10pt;
+    line-height: 1.35;
+  }
+  /* Hide chrome that has no value on paper */
+  header, footer, [data-no-print] {
+    display: none !important;
+  }
+  /* Strip dark backgrounds, gradients, shadows */
+  *, *::before, *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+  /* Show URLs after external links so paper readers can find them */
+  a[href^="http"]::after,
+  a[href^="mailto:"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #444 !important;
+    word-break: break-all;
+  }
+  a[href^="http"][data-no-url-print]::after,
+  a[href^="mailto:"][data-no-url-print]::after {
+    content: "";
+  }
+  main, article, section {
+    page-break-inside: auto;
+  }
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  ul, ol {
+    page-break-inside: avoid;
+  }
+  /* Tighten layout that's normally on-screen-comfortable */
+  main, article {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  section {
+    padding: 0 !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+  /* Headings — smaller and tighter on paper */
+  h1 {
+    font-size: 18pt !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.15rem !important;
+  }
+  h2 {
+    font-size: 13pt !important;
+    margin-bottom: 0.4rem !important;
+    padding-bottom: 0.15rem !important;
+    border-bottom-width: 1px !important;
+  }
+  h3 {
+    font-size: 11pt !important;
+  }
+  /* Drop big top/bottom rhythm that wastes paper */
+  .py-16, .py-12, .pt-16, .pt-12, .pb-16, .pb-12 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .py-8, .py-6, .py-4, .pt-8, .pt-6, .pt-4, .pb-8, .pb-6, .pb-4 {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+  .mb-16, .mb-12, .mb-10 { margin-bottom: 0.5rem !important; }
+  .mb-8 { margin-bottom: 0.4rem !important; }
+  .mb-6, .mb-4, .mb-3, .mb-2 { margin-bottom: 0.25rem !important; }
+  .space-y-16 > * + *, .space-y-12 > * + *, .space-y-10 > * + * {
+    margin-top: 0.55rem !important;
+  }
+  .space-y-8 > * + *, .space-y-6 > * + *, .space-y-4 > * + * {
+    margin-top: 0.3rem !important;
+  }
+  .space-y-3 > * + *, .space-y-2 > * + * {
+    margin-top: 0.15rem !important;
+  }
+  /* Drop the gradient hero block padding entirely on paper */
+  .bg-gradient-to-br {
+    padding: 0 !important;
+    margin-bottom: 0.4rem !important;
+  }
+  /* Resume avatar: shrink for paper */
+  .print-shrink-avatar {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  /* Skill chips look bad as outlined pills on paper — render inline */
+  .print-inline-pills > * {
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin-right: 0.6em !important;
+  }
+  .print-inline-pills > *:not(:last-child)::after {
+    content: " ·";
+    color: #999 !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
 }

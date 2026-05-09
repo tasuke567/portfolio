@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { SITE_NAME } from '@/lib/site'
 
 interface TransitionCtx {
   navigate: (href: string) => void
@@ -18,6 +19,7 @@ const EASE: [number, number, number, number] = [0.76, 0, 0.24, 1]
 export function PageTransitionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
+  const reduced = useReducedMotion()
   const [phase, setPhase] = useState<Phase>('idle')
   const dest = useRef('')
 
@@ -26,11 +28,17 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       const targetPath = href.split('#')[0] || '/'
       const hash = href.includes('#') ? href.split('#')[1] : null
 
-      // Same page — just smooth scroll, no curtain
       if (targetPath === pathname || (targetPath === '' && pathname === '/')) {
         if (hash) {
-          document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' })
+          document
+            .getElementById(hash)
+            ?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' })
         }
+        return
+      }
+
+      if (reduced) {
+        router.push(href)
         return
       }
 
@@ -38,7 +46,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       dest.current = href
       setPhase('cover')
     },
-    [phase, pathname],
+    [phase, pathname, reduced, router],
   )
 
   const onComplete = useCallback(() => {
@@ -61,8 +69,8 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
           animate={{ y: phase === 'cover' ? '0%' : '-100%' }}
           transition={{ duration: 0.6, ease: EASE }}
           onAnimationComplete={onComplete}
+          aria-hidden="true"
         >
-          {/* Name */}
           <motion.p
             className="text-white text-[10px] font-bold uppercase tracking-[0.4em]"
             initial={{ opacity: 0, y: 10 }}
@@ -72,10 +80,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
             }}
             transition={{ duration: 0.3, delay: phase === 'cover' ? 0.32 : 0 }}
           >
-            Thapanakorn Yotyothinkul
+            {SITE_NAME}
           </motion.p>
 
-          {/* Expanding line */}
           <motion.div
             className="h-px bg-white/30 rounded-full"
             initial={{ width: 0 }}

@@ -1,12 +1,18 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ProjectCard } from './ProjectCard';
 import { Project } from '@/lib/projects';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/',
+}));
 
 const mockProject: Project = {
   id: 'test-proj',
   title: 'Test Project',
   description: 'This is a test project description.',
+  longDescription: 'Long description.',
   technologies: ['React', 'TypeScript', 'Tailwind'],
   highlights: ['Did something cool', 'Improved performance'],
   isPrivate: false,
@@ -18,7 +24,9 @@ describe('ProjectCard', () => {
   it('renders project title and description', () => {
     render(<ProjectCard project={mockProject} />);
     expect(screen.getByText('Test Project')).toBeInTheDocument();
-    expect(screen.getByText('This is a test project description.')).toBeInTheDocument();
+    expect(
+      screen.getByText('This is a test project description.'),
+    ).toBeInTheDocument();
   });
 
   it('renders technologies', () => {
@@ -35,23 +43,32 @@ describe('ProjectCard', () => {
     });
   });
 
-  it('renders links correctly when public', () => {
+  it('renders external links when public', () => {
     render(<ProjectCard project={mockProject} />);
-    const githubLink = screen.getByText('View on GitHub →');
+    const githubLink = screen.getByText('GitHub ↗');
     expect(githubLink).toHaveAttribute('href', mockProject.githubUrl);
 
     const demoLink = screen.getByText('Live Demo ↗');
     expect(demoLink).toHaveAttribute('href', mockProject.demoUrl);
   });
 
-  it('renders private badge and text when isPrivate is true', () => {
-    const privateProject = { ...mockProject, isPrivate: true, githubUrl: undefined };
+  it('always renders the "Read more" detail link', () => {
+    render(<ProjectCard project={mockProject} />);
+    const readMore = screen.getByText('Read more →');
+    expect(readMore).toHaveAttribute('href', `/projects/${mockProject.id}`);
+  });
+
+  it('renders private badge and hides GitHub link when private', () => {
+    const privateProject = {
+      ...mockProject,
+      isPrivate: true,
+      githubUrl: undefined,
+      demoUrl: undefined,
+    };
     render(<ProjectCard project={privateProject} />);
-    
-    // Using getAllByText since "Private" and "Private Repository" both match, wait, exact match might be fine for "Private"
-    // Let's use getByText with exact: false or function
     expect(screen.getByText('Private')).toBeInTheDocument();
-    expect(screen.getByText('Private Repository')).toBeInTheDocument();
-    expect(screen.queryByText('View on GitHub →')).not.toBeInTheDocument();
+    expect(screen.queryByText('GitHub ↗')).not.toBeInTheDocument();
+    expect(screen.queryByText('Live Demo ↗')).not.toBeInTheDocument();
+    expect(screen.getByText('Read more →')).toBeInTheDocument();
   });
 });

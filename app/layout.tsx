@@ -3,6 +3,15 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PageTransitionProvider } from "@/components/PageTransition";
+import { AppShell } from "@/components/AppShell";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_DESCRIPTION,
+} from "@/lib/site";
+import { metadataKeywords } from "@/lib/skills";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,40 +24,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const BASE_URL = "https://www.weydev.com";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Thapanakorn Yotyothinkul — Full-Stack Developer",
-    template: "%s — Thapanakorn Yotyothinkul",
+    default: SITE_TITLE,
+    template: `%s — ${SITE_NAME}`,
   },
-  description:
-    "Full-stack developer based in Bangkok, Thailand. Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms. Open to new opportunities.",
-  keywords: [
-    "Thapanakorn Yotyothinkul",
-    "full-stack developer",
-    "Angular",
-    "React",
-    "Next.js",
-    "Laravel",
-    "Node.js",
-    "Rust",
-    "TypeScript",
-    "NestJS",
-    "GCP",
-    "Docker",
-    "Bangkok",
-    "Thailand",
-    "portfolio",
-  ],
-  authors: [{ name: "Thapanakorn Yotyothinkul", url: BASE_URL }],
-  creator: "Thapanakorn Yotyothinkul",
+  description: SITE_DESCRIPTION,
+  keywords: metadataKeywords,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
   alternates: {
-    canonical: BASE_URL,
-  },
-  other: {
-    "google-site-verification": "",
+    canonical: SITE_URL,
+    types: {
+      "application/rss+xml": [
+        { url: `${SITE_URL}/feed.xml`, title: `${SITE_NAME} — Case Studies` },
+      ],
+    },
   },
   icons: {
     icon: "/icon",
@@ -64,17 +56,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+    title: SITE_TITLE,
     description:
       "Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms. Based in Bangkok, Thailand.",
-    url: BASE_URL,
-    siteName: "Thapanakorn Yotyothinkul",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Thapanakorn Yotyothinkul — Full-Stack Developer",
+    title: SITE_TITLE,
     description:
       "Building scalable enterprise systems with Angular, React, Node.js, Rust, and cloud platforms.",
   },
@@ -96,11 +88,14 @@ export default function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
       </head>
       <body className="min-h-full flex flex-col bg-white dark:bg-black">
-        <PageTransitionProvider>
-          <Header />
-          {children}
-          <Footer />
-        </PageTransitionProvider>
+        <LanguageProvider>
+          <PageTransitionProvider>
+            <Header />
+            {children}
+            <Footer />
+            <AppShell />
+          </PageTransitionProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
