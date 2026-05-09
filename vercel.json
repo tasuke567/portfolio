@@ -3,12 +3,12 @@
     {
       "source": "/github",
       "destination": "https://github.com/tasuke567",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/linkedin",
       "destination": "https://linkedin.com/in/tasuke567",
-      "permanent": false
+      "permanent": true
     }
   ]
 }
