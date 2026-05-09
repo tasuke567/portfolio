@@ -1,0 +1,78 @@
+import { BroadcastFanoutDemo } from '@/components/demos/BroadcastFanoutDemo'
+
+## What MEKS actually is
+
+MEKS sits between a TikTok live stream and 30–300 operator dashboards. It pulls gift events, battle/PK status, and ranking changes off the upstream feed, normalizes them, and fans them out within a frame budget — the streamer expects the leaderboard to be correct *now*, not a second from now.
+
+The interesting constraint is bursts. Steady state is a trickle. During battles it's hundreds of events per second. The system has to absorb the burst without dropping events and without stalling the steady-state path.
+
+## Why not Node
+
+The first prototype was Node and it ran fine for steady-state 50 events per second.
+
+What killed it wasn't throughput — Node could push enough JSON. It was **tail latency under bursts**. When event rate jumped from 50 to 500/sec for ninety seconds, GC pauses became visible to the dashboards: 200–400ms hitches during exactly the moments operators were watching most closely.
+
+You can mitigate — pre-allocate, pool buffers, avoid closures in the hot path. We did, and it helped. But the floor was set by V8's GC, and the floor wasn't low enough.
+
+## Why Rust + Axum + Tokio
+
+The decision wasn't "Rust is faster." Rust is faster on average, but average wasn't the problem. The decision was:
+
+- **Predictable memory.** No stop-the-world. The hitches we were seeing in Node are not a thing in Rust. We don't have to *not have* GC pauses; we have to not have *unpredictable* ones, and Rust gives us that for free.
+- **Tokio's task scheduler is well-suited to bursty fan-out.** Spawning a task per inbound connection and letting Tokio multiplex them across a thread pool is essentially the workload we have. We didn't have to invent anything.
+- **Axum is small and gets out of the way.** It's basically tower middleware + routing + WebSocket helpers. There's nothing magic in it; nothing to fight.
+
+The combination meant the hot path could be written as a tight, allocation-aware Rust function and the cold paths (admin endpoints, health checks, config) could be written as ordinary handlers.
+
+## What the architecture actually is
+
+```
+upstream feed ──► ingest task ──► ring buffer (bounded mpsc)
+                                       │
+                                       ▼
+                              normalizer task pool
+                                       │
+                            ┌──────────┴──────────┐
+                            ▼                     ▼
+                     ranking actor          fan-out broadcaster
+                     (single owner)         (broadcast::Sender)
+                            │                     │
+                            └──────────┬──────────┘
+                                       ▼
+                              connected dashboards
+                              (per-conn ws::Sender)
+```
+
+A few decisions worth flagging:
+
+**Ranking is a single-owner actor.** The leaderboard is mutable shared state and the simplest thing that's correct is to put it behind a single task that owns it. Updates go in via an mpsc; reads go out via an `oneshot` reply. This is conceptually slower than a `RwLock`, but in practice it's faster *and* simpler because there's no contention and the state never gets seen mid-update.
+
+**Fan-out is `tokio::sync::broadcast`.** Each connected dashboard subscribes to the broadcast channel; the ranking actor publishes to it. If a slow dashboard falls behind, broadcast handles it for us — the dashboard sees a `Lagged` error and we send a snapshot to recover. We don't have to invent backpressure semantics; the channel has them.
+
+Easier to feel than to read. Try it:
+
+<BroadcastFanoutDemo />
+
+Bump the rate. Slow down a subscriber and watch its buffer fill until it goes `Lagged` — that's the channel telling you "you've fallen further behind than my buffer can hold, here's what you missed in aggregate." Speed it back up: snapshot recovery jumps the cursor to head. The sender never blocks waiting on the slowest reader.
+
+**The ingest ring is bounded.** A bounded mpsc means if the upstream feed somehow outpaces the normalizer, we get backpressure rather than unbounded memory growth. We picked a capacity that holds about two seconds of peak burst; the normalizer pool is sized so that two seconds is enough headroom.
+
+## What bit us
+
+**Async cancellation safety.** The first time a dashboard disconnected mid-update we corrupted a ranking entry. The fix was the usual one — make critical sections cancel-safe by computing the new value first and only swapping it in atomically — but it's the kind of bug you don't even see in a language without `async drop`.
+
+**SVG handling on the desktop side.** The Dioxus client renders gift icons as SVGs. Each icon comes from a different artist with a different idea of what the viewBox is. We ended up shipping a tiny normalization pass on the build side because runtime SVG normalization is just not worth the bytes.
+
+**NSIS as an installer.** This is more "Windows distribution" than "Rust" but the build pipeline turned out to be the second-hardest part of the project, after async cancellation. NSIS is fine; the Rust side is fine; gluing them together on every commit took longer than I'd like to admit. The result is robust, but if I were starting over I'd evaluate `cargo-wix` and `tauri-bundler` first.
+
+## Things Rust did *not* solve
+
+- **Operability.** A panic in a Rust task is just as silent as an unhandled rejection in Node if you don't wire up structured logging. We use `tracing` everywhere now; the first three weeks we didn't, and debugging a production hitch was needles-in-haystacks.
+- **Schema discipline.** The upstream feed adds fields without warning. Rust's strictness made us write `serde` types early, which is good, but it also meant a new field could panic the deserializer. We use `#[serde(deny_unknown_fields = false)]` on every inbound type now, and treat the inbound schema as untrusted on principle.
+- **Iteration speed.** The cycle of edit → compile → test is slower than Node. For the steady-state workload that's fine; for prototyping new gift handlers it's friction. We solved it by carving out a "playground" binary that exercises the same handlers from canned JSON files; that kept the inner loop tight.
+
+## Would I do it again
+
+For this workload, yes — without hesitation. The reason is narrow and worth being honest about: **we needed predictable latency under bursts, and the language gave us that.** If our problem were "serve a JSON API with 99th-percentile of 100ms," we'd have stayed on Node and saved a quarter of engineering time.
+
+The lesson I keep coming back to is that "Rust is faster" is a bad reason to pick Rust, because most of the time the Node version was already fast enough. "Rust gives me a tail-latency profile I can reason about" is a real reason. If you're picking it, pick it for that.

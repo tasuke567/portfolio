@@ -1,0 +1,84 @@
+<h2 id="the-constraint-th">ข้อจำกัด</h2>
+
+NCENT รองรับพนักงานมากกว่า 2,000 คนของ NC Entertainment. Payroll รันสิ้นเดือน ต้องคิดทั้ง shifts, expenses, KPI bonuses, leave accruals, และ ad-hoc adjustments อีกยาวเหยียด. ทุกช่องบนสลิปคือผลของห่วงโซ่การตัดสินใจ — พลาดที่ไหนสักที่ = Slack ping ตอนสามทุ่ม.
+
+ตอนผมเข้าทีม flow เก่าเป็นการรันแบบ sequential — ดึง shifts, คิด base, บวก OT, หัก, คิดภาษี, ใส่ benefits, save. ทุก pass mutate payroll record ที่ใช้ร่วมกัน. มันรันได้ที่ 600 คน เริ่มเดี้ยงที่ 1,200.
+
+<h2 id="what-broke-th">อะไรพัง</h2>
+
+ของแรกที่พังไม่ใช่ compute time. มันคือ *traceability*.
+
+เวลาสลิปออกมาผิด HR analyst ต้องเดินย้อน 5 mutating passes เพื่อหาว่า pass ไหนใส่เลขเพี้ยน. ครึ่งหนึ่งคำตอบคือ "step 3 อ่านค่าที่ step 2 ยังเขียนไม่เสร็จ". Reproduce บั๊กต้อง re-run ทั้งระบบ — 10 วินาทีต่อพนักงาน. ที่ 1,200 คนมันเจ็บ ที่ 2,000 คนไม่ไหว.
+
+มี 2 ปัญหาเชิงโครงสร้าง:
+
+- **Mutation ซ่อน causality.** ถ้า step 3 เห็นเลขผิด คุณบอกไม่ได้ว่า step 2 เป็นคนเขียน หรือ step 1 เขียนแล้ว step 2 ลืมเขียนทับ
+- **Sequential coupling บัง parallelism.** สองในสามของ pass ไม่ได้ depend กันจริง ๆ. มันเรียง sequential เพราะ *data structure บังคับ* ไม่ใช่เพราะ domain ต้องการ
+
+<h2 id="the-shape-we-landed-on-th">รูปร่างที่เลือกใช้</h2>
+
+เราเขียน engine ใหม่รอบไอเดียเดียว: **payroll run คือ pure function จาก inputs ไป resolved record** และ pipeline คือ graph ของ named resolvers แต่ละตัว publish ไป typed slot.
+
+```
+inputs ─┐
+        ├─► baseResolver  ──► slot:base
+        ├─► overtimeResolver ──► slot:overtime
+        ├─► leaveResolver ──► slot:leave
+slots:base ──┐
+slots:overtime ──┼─► taxResolver ──► slot:tax
+slots:leave ──┘
+... แบบนี้ต่อไป
+```
+
+มี 3 อย่างที่ตามมาเป็นธรรมชาติ:
+
+1. **Resolver แต่ละตัวประกาศ inputs ของตัวเอง.** มันไม่ไปจิ้ม shared object — มันถาม engine ว่า `slot:base` พร้อมยัง ถ้ายังก็ suspend จนกว่าจะ publish. Dependency graph เลย explicit + topological sort ได้
+2. **Slot เขียนแล้วเขียนทับไม่ได้.** Resolver เขียนทับ output ของ resolver อื่นไม่ได้. ถ้า 2 resolver อยากเขียน slot เดียวกัน — error ตอน register, ไม่ใช่ตอน 11 โมงคืน
+3. **Resolver ที่ independent รันขนานกัน.** Engine เดิน graph ส่งงานทุกตัวที่ inputs พร้อม. รันจริงประมาณครึ่งหนึ่ง independent
+
+ใน Angular, resolver registry เป็น token DI เล็ก ๆ — ทุก resolver implement `Resolver<TIn, TOut>` ลงทะเบียนเข้า `PayrollEngine` token. ตัว engine คือ RxJS operator: input stream เข้า, resolved-record stream ออก, ใช้ `scan` สะสม slots และ `combineLatest` ต่อ resolver gate ตาม inputs ที่ประกาศ.
+
+<h2 id="what-rxjs-bought-us-th">ที่ RxJS ให้กับเรา</h2>
+
+คนระแวง RxJS สำหรับ business logic — และระแวงถูกแล้ว เพราะส่วนใหญ่มันคือเครื่องมือผิด. แต่กับงานนี้มันถูก ด้วยเหตุผลเดียว: **payroll engine คือ fan-out / fan-in computation บน streams of changes**.
+
+เวลา HR analyst ปรับ overtime override ของพนักงานคนเดียว เราไม่อยาก recompute ทั้ง batch. เราอยาก invalidate เฉพาะ slot ที่อยู่ downstream ของ input นั้น recompute, แล้ว propagate ต่อ. RxJS ให้สิ่งนั้นฟรี ถ้า model slot เป็น `BehaviorSubject` และ resolver เป็น operator ที่ subscribe inputs ที่ประกาศไว้.
+
+ที่ต้องระวัง: hot-vs-cold. Slot แต่ละตัวคือ hot subject (multicast, latest-value-wins). Resolver แต่ละตัวคือ cold operator ที่กลายเป็น hot ตอน engine subscribe. สลับสองอันนี้ผิดจะได้ replays-on-every-employee (พังหนัก) หรือ stale reads (แย่กว่า — เงียบแต่พัง).
+
+<h2 id="what-it-looks-like-in-practice-th">หน้าตาในโค้ดจริง</h2>
+
+Resolver จากต้นถึงจบ:
+
+```ts
+@Injectable()
+export class OvertimeResolver implements Resolver<OTInputs, Money> {
+  readonly slot = "overtime" as const;
+  readonly inputs = ["base", "shifts", "policy"] as const;
+
+  resolve({ base, shifts, policy }: OTInputs): Money {
+    if (!policy.overtimeEnabled) return Money.zero(base.currency);
+    const otHours = shifts.reduce(
+      (acc, s) => acc + Math.max(0, s.hours - policy.dailyCap),
+      0,
+    );
+    return base.rate.times(otHours).times(policy.multiplier);
+  }
+}
+```
+
+Resolver pure + test ง่าย. ทุก payroll bug ที่ ship หลัง rewrite reproduce ได้จาก `OTInputs` object ที่ frozen ไว้ — ไม่ต้องใช้ database, clock, หรือ auth context — แค่ inputs เข้า, money ออก.
+
+<h2 id="what-id-do-differently-th">ถ้าทำใหม่จะเปลี่ยนอะไร</h2>
+
+มี 2 อย่างที่นึกย้อนกลับไป:
+
+**Slot versions.** เราไม่ได้ version shape ของ slot. ตอนเปลี่ยน shape ของ `slot:overtime` ให้รวมรายการ shifts ที่มาประกอบ resolver downstream อ่าน shape เก่าผ่าน TypeScript structural typing แบบเงียบ ๆ. แก้ด้วยการ brand แต่ละ slot ด้วย version literal และ bump เวลา shape เปลี่ยน. ง่ายมาก แต่อยากให้ทำตั้งแต่วันแรก.
+
+**CLI สำหรับ replay.** ตอนนี้ reproduce payroll bug ต้อง spin up ทั้งแอพ. ควรสร้าง CLI เล็ก ๆ ที่โหลด frozen run จาก JSON, รัน engine, diff กับ output ที่ store ไว้. เวลาที่ลงทุนคุ้มภายในเดือนเดียว. กำลังสร้างอยู่.
+
+<h2 id="the-thing-that-mattered-most-th">สิ่งที่สำคัญที่สุด</h2>
+
+ไม่ใช่ RxJS. ไม่ใช่ resolver graph. มันคือการย้ายจาก "mutate shared state" ไปเป็น "publish ใส่ named slot." พอตรงนี้เข้าที่ — parallelism, traceability, และ partial-recompute หล่นมาฟรีหมด.
+
+ถ้ากำลังสร้าง domain engine ที่ business analyst สนใจว่า *ทำไม* เลขนี้มาเป็นเลขนี้ มากกว่ามันคิดเร็วแค่ไหน — ทำให้ causality ราคาถูก. ทุกอย่างที่เหลือ downstream จากตรงนี้.

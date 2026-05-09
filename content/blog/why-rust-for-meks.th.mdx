@@ -1,0 +1,78 @@
+import { BroadcastFanoutDemo } from '@/components/demos/BroadcastFanoutDemo'
+
+<h2 id="what-meks-actually-is-th">MEKS คืออะไรจริง ๆ</h2>
+
+MEKS อยู่ระหว่าง TikTok live stream กับ operator dashboard 30–300 ตัว. มันดึง gift events, สถานะ battle/PK, และการเปลี่ยน ranking จาก feed ต้นทาง normalize, แล้ว fan out ภายใน frame budget — streamer คาดว่า leaderboard ต้องถูก *เดี๋ยวนี้* ไม่ใช่อีก 1 วินาที.
+
+ข้อจำกัดที่น่าสนใจคือ burst. Steady state ไหลเรื่อย ๆ. ตอน battle เริ่ม events พุ่งเป็นหลายร้อยต่อวินาที. ระบบต้องดูดซับ burst ได้โดยไม่ทำ events ตก และไม่ทำ steady-state path สะดุด.
+
+<h2 id="why-not-node-th">ทำไมไม่ใช้ Node</h2>
+
+Prototype แรกผมเขียนด้วย Node และมันรันได้ดีที่ steady 50 events/sec.
+
+ที่ฆ่ามันไม่ใช่ throughput — Node push JSON ได้สบาย. มันคือ **tail latency ตอน burst**. ตอน event rate กระโดดจาก 50 เป็น 500/sec นาน 90 วินาที, GC pauses กลายเป็นอาการสะดุดที่ dashboard มองเห็น: hitch 200–400ms ในจังหวะที่ operator กำลังจ้องที่สุด.
+
+Mitigate ได้ — pre-allocate, pool buffers, เลี่ยง closure ใน hot path. เราทำหมด มันช่วย. แต่พื้นถูกตั้งโดย V8's GC และพื้นมันไม่ต่ำพอ.
+
+<h2 id="why-rust-axum-tokio-th">ทำไม Rust + Axum + Tokio</h2>
+
+การตัดสินใจไม่ใช่ "Rust เร็วกว่า." Rust เร็วกว่าโดยเฉลี่ย แต่ค่าเฉลี่ยไม่ใช่ปัญหา. ที่ตัดสินใจเพราะ:
+
+- **Memory predictable.** ไม่มี stop-the-world. Hitch ที่เห็นใน Node ไม่เกิดใน Rust. เราไม่ต้องการ *ไม่มี* GC pauses, เราต้องการ pause ที่ *predictable* ได้ — Rust ให้ฟรี
+- **Tokio task scheduler เหมาะกับ bursty fan-out.** Spawn task ต่อ inbound connection แล้วให้ Tokio multiplex ผ่าน thread pool — เป็น workload ของเราตรง ๆ. ไม่ต้องคิดอะไรใหม่
+- **Axum เล็กและไม่กวน.** มันคือ tower middleware + routing + WebSocket helpers. ไม่มีอะไร magic, ไม่มีอะไรต้องสู้
+
+รวมกันแปลว่า hot path เขียนเป็น Rust function ที่ allocation-aware และ cold path (admin endpoints, health checks, config) เขียนเป็น handler ปกติได้.
+
+<h2 id="what-the-architecture-actually-is-th">สถาปัตยกรรมจริง</h2>
+
+```
+upstream feed ──► ingest task ──► ring buffer (bounded mpsc)
+                                       │
+                                       ▼
+                              normalizer task pool
+                                       │
+                            ┌──────────┴──────────┐
+                            ▼                     ▼
+                     ranking actor          fan-out broadcaster
+                     (single owner)         (broadcast::Sender)
+                            │                     │
+                            └──────────┬──────────┘
+                                       ▼
+                              connected dashboards
+                              (per-conn ws::Sender)
+```
+
+จุดที่ควรกล่าวถึง:
+
+**Ranking เป็น single-owner actor.** Leaderboard คือ mutable shared state — สิ่งที่ง่ายและถูกที่สุดคือเอามันใส่ไว้หลัง task เดียวที่เป็นเจ้าของ. Update เข้าผ่าน mpsc, read ออกผ่าน `oneshot` reply. Concept ช้ากว่า `RwLock` แต่จริง ๆ เร็วกว่า + ง่ายกว่าเพราะไม่มี contention และ state ไม่เคยถูกเห็น mid-update.
+
+**Fan-out คือ `tokio::sync::broadcast`.** Dashboard แต่ละตัว subscribe channel; ranking actor publish เข้า. ถ้า dashboard ช้าถอยหลัง broadcast จัดการให้ — dashboard เห็น `Lagged` error และเราส่ง snapshot ไป recover. ไม่ต้องคิด backpressure semantics เอง — channel มีในตัว.
+
+รู้สึกง่ายกว่าอ่าน. ลองเล่น:
+
+<BroadcastFanoutDemo />
+
+ลองเร่ง rate. Slow down subscriber แล้วดู buffer ของมันค่อย ๆ เต็มจน Lagged — นั่นคือ channel บอกว่า "คุณตามไม่ทันเกินกว่าที่ buffer ผมเก็บได้, นี่คือสิ่งที่คุณพลาดรวมๆ." กดเร่งกลับ: snapshot recovery ดัน cursor ไปที่หัว. Sender ไม่เคย block รอ reader ที่ช้าที่สุด.
+
+**Ingest ring มีขอบเขต.** Bounded mpsc แปลว่าถ้า upstream feed ไหลแซง normalizer เราจะได้ backpressure แทน memory โต unbounded. เราเลือก capacity ให้พอใส่ peak burst 2 วินาที; normalizer pool ขนาดให้ 2 วิ headroom พอ.
+
+<h2 id="what-bit-us-th">อะไรกัดเรา</h2>
+
+**Async cancellation safety.** ครั้งแรกที่ dashboard disconnect mid-update เรา corrupt ranking entry. แก้ด้วยวิธีปกติ — ทำ critical section ให้ cancel-safe โดยคำนวณค่าใหม่ก่อนแล้วค่อย swap เข้าแบบ atomic — แต่เป็นบั๊กที่คุณจะไม่เห็นในภาษาที่ไม่มี `async drop`.
+
+**SVG ฝั่ง desktop.** Dioxus client render gift icon เป็น SVG. แต่ละ icon มาจากศิลปินคนละคน มี viewBox คนละมาตรฐาน. เราเลย ship normalization pass ฝั่ง build เพราะ runtime SVG normalization ไม่คุ้ม bytes.
+
+**NSIS เป็น installer.** อันนี้เกี่ยวกับการ distribute Windows มากกว่า Rust แต่ build pipeline กลายเป็นส่วนยากที่สอง รองจาก async cancellation. NSIS โอเค; ฝั่ง Rust โอเค; กาวสองอันนี้บน CI ทุก commit ใช้เวลานานกว่าที่อยากบอก. ผลลัพธ์มั่นคง แต่ถ้าเริ่มใหม่ผมจะลอง `cargo-wix` กับ `tauri-bundler` ก่อน.
+
+<h2 id="things-rust-did-not-solve-th">ที่ Rust แก้ให้ไม่ได้</h2>
+
+- **Operability.** Panic ใน Rust task เงียบเหมือน unhandled rejection ใน Node ถ้าไม่ wire structured logging. เราใช้ `tracing` ทุกที่ตอนนี้; 3 สัปดาห์แรกไม่ได้ใช้ — debug production hitch กลายเป็นหาเข็มในกองหญ้า
+- **Schema discipline.** Upstream feed เพิ่ม field โดยไม่บอก. Rust strict ทำให้เราเขียน `serde` types ตั้งแต่ต้น (ดี) แต่ก็แปลว่า field ใหม่ทำให้ deserializer panic ได้. เราใส่ `#[serde(deny_unknown_fields = false)]` ทุก inbound type, และมอง inbound schema เป็น untrusted
+- **Iteration speed.** Cycle edit → compile → test ช้ากว่า Node. สำหรับ steady-state workload โอเค; สำหรับ prototype gift handler ใหม่มันเสียดทาน. แก้โดยแยก "playground" binary ที่รัน handler เดิมจาก JSON ที่ canned ไว้ — ทำให้ inner loop กระชับ
+
+<h2 id="would-i-do-it-again-th">จะทำใหม่ไหม</h2>
+
+สำหรับ workload นี้ — ใช่ ไม่ลังเล. เหตุผลแคบและควรพูดให้ตรง: **เราต้องการ tail latency ที่ predictable ตอน burst, ภาษาให้สิ่งนั้น.** ถ้าปัญหาคือ "serve JSON API ที่ p99 100ms" เราคงอยู่กับ Node และประหยัดเวลา dev ไป 1/4.
+
+บทเรียนที่กลับมาเสมอ: "Rust เร็วกว่า" เป็นเหตุผลแย่ในการเลือก Rust — เพราะส่วนใหญ่ Node version ก็เร็วพอแล้ว. "Rust ให้ tail-latency profile ที่ผม reason ได้" เป็นเหตุผลจริง. ถ้าจะเลือก เลือกเพราะเหตุผลนี้.

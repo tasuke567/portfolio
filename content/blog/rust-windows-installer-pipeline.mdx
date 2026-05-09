@@ -1,0 +1,202 @@
+## What this is about
+
+You wrote a Rust desktop app. It runs locally with `cargo run`. Now you need to ship it to people who don't have a Rust toolchain — operations folks who'll click an installer, see a SmartScreen warning, click "More info → Run anyway," and expect your app in their Start menu. Every tag on `main` should produce a fresh installer.
+
+The pieces — `cargo build --release`, NSIS, GitHub Actions, code signing, versioning — each have decent docs in isolation. The trick is wiring them together so a non-engineer can install from a link, and so *you* can ship a new version without touching the installer script.
+
+This is the pipeline I landed on after enough iterations to be opinionated.
+
+## Why NSIS
+
+There are three real choices for Windows installers: NSIS, WiX/MSI, and bundlers like `cargo-wix` or `tauri-bundler`.
+
+- **WiX/MSI** is what enterprises expect. It supports group policy deployment, MSI uninstall semantics, all the things IT departments care about. It's also extremely cumbersome — XML, GUIDs everywhere, an opinionated ceremony for every file you ship.
+- **`cargo-wix`** wraps WiX and removes some of the pain, but you still pay for MSI's strictness. It's the right answer if your installer goes through corporate IT.
+- **`tauri-bundler`** is excellent if you happen to be using Tauri. If you're not, importing it just for the bundler feels like the tail wagging the dog.
+- **NSIS** is a tiny scripting language that produces a single `.exe` installer. The script reads like a shell script, the resulting EXE is small, and the language has been stable for two decades. The downside is that it's procedural and it shows.
+
+For most internal-tools and prosumer apps, NSIS is the right default. We picked it for one reason that ended up mattering: **operations users want to double-click an EXE**, not to be asked about elevation, MSI policies, or transformations. NSIS just runs.
+
+## The pipeline shape
+
+```
+cargo build --release
+        │
+        ▼
+  target/release/myapp.exe
+        │
+        ├──► sign (signtool with cert)
+        │
+        ▼
+  makensis installer.nsi  (consumes the signed exe)
+        │
+        ▼
+  myapp-vX.Y.Z-setup.exe
+        │
+        ├──► sign (signtool again — installer needs its own signature)
+        │
+        ▼
+  upload to GitHub release
+```
+
+Two signing passes is not a typo. The inner binary needs to be signed so SmartScreen doesn't yell about it after install, and the installer EXE itself needs to be signed so it doesn't yell when you run it. Skip either and you'll spend a year explaining "click More info → Run anyway" in a support thread.
+
+## The NSIS script
+
+The whole thing is about 80 lines for a real app. Here's the spine:
+
+```nsis
+!define APP_NAME "MyApp"
+!define APP_VERSION "0.0.0"          ; rewritten by CI before makensis runs
+!define APP_PUBLISHER "Me"
+!define APP_EXE "myapp.exe"
+
+Name        "${APP_NAME}"
+OutFile     "myapp-v${APP_VERSION}-setup.exe"
+InstallDir  "$LOCALAPPDATA\${APP_NAME}"
+RequestExecutionLevel user            ; per-user, no UAC prompt
+
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
+
+Section "Install"
+  SetOutPath "$INSTDIR"
+  File "..\target\release\${APP_EXE}"
+  File /r "..\assets"
+
+  CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+  CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "DisplayName" "${APP_NAME}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "DisplayVersion" "${APP_VERSION}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "Publisher" "${APP_PUBLISHER}"
+SectionEnd
+
+Section "Uninstall"
+  Delete "$INSTDIR\${APP_EXE}"
+  RMDir /r "$INSTDIR\assets"
+  Delete "$INSTDIR\Uninstall.exe"
+  RMDir "$INSTDIR"
+  Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
+  RMDir "$SMPROGRAMS\${APP_NAME}"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+SectionEnd
+```
+
+Three things worth flagging:
+
+**`RequestExecutionLevel user`.** Per-user install means no UAC prompt at install time, and the app lives in `%LOCALAPPDATA%`. This is right for a tool an individual user installs on their own machine. If you're shipping to a lab where IT installs once for many users, switch to `admin` and `$PROGRAMFILES`.
+
+**`HKCU` (current user) registry, not `HKLM`.** Matches the per-user install. If you write to `HKLM`, the uninstaller won't have permission to clean up later when the installer was per-user.
+
+**The `${APP_VERSION}` macro.** Don't hard-code this. CI rewrites it from the cargo version (or the git tag) before invoking `makensis`. We'll get to that next.
+
+## The GitHub Actions workflow
+
+This is the version I keep coming back to:
+
+```yaml
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write          # needed to create the release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart("v")
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Sign binary
+        env:
+          CERT_B64: ${{ secrets.SIGNING_CERT_PFX }}
+          CERT_PWD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String($env:CERT_B64)
+          [IO.File]::WriteAllBytes("cert.pfx", $bytes)
+          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" `
+            sign /f cert.pfx /p $env:CERT_PWD /tr http://timestamp.digicert.com `
+            /td sha256 /fd sha256 target\release\myapp.exe
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          (Get-Content installer\setup.nsi) `
+            -replace '!define APP_VERSION "0.0.0"', `
+                    '!define APP_VERSION "${{ steps.ver.outputs.version }}"' `
+            | Set-Content installer\setup.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer\setup.nsi
+
+      - name: Sign installer
+        env:
+          CERT_PWD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" `
+            sign /f cert.pfx /p $env:CERT_PWD /tr http://timestamp.digicert.com `
+            /td sha256 /fd sha256 `
+            "installer\myapp-v${{ steps.ver.outputs.version }}-setup.exe"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/myapp-v*.exe
+          draft: false
+          generate_release_notes: true
+```
+
+The shape that took me a few tries to settle on:
+
+- **Tag-driven, not commit-driven.** Pushing a tag like `v0.4.2` is the only thing that triggers a release. `main` builds run separately for CI but don't ship.
+- **Single Windows runner.** Cross-compiling Rust binaries for Windows from Linux is possible but invites a long tail of "works on my machine" issues. `windows-latest` is the path of least surprise.
+- **`--locked` on the build.** Forces CI to use the committed `Cargo.lock`. If a transitive dep got bumped on crates.io between when you tested locally and when CI ran, `--locked` catches it.
+- **`Swatinem/rust-cache`.** Without it, every release rebuilds every dep. With it, releases drop from 8 minutes to about 90 seconds for an incremental change.
+
+## The signing trap
+
+The biggest trap is the cert. Two things to know up front:
+
+1. **An OV (organization-validated) cert is enough for the SmartScreen warning to go away within a few weeks of installs.** EV certs make it go away immediately but cost 3-5×. For an internal tool, OV is fine.
+2. **`signtool.exe` lives somewhere different on every Windows SDK version**. Hard-coding the path (as the workflow above does) is fragile. A more robust version uses `Get-ChildItem` to find it dynamically — but then you're maintaining a script. Pick your poison.
+
+If you're shipping something where the SmartScreen warning is unacceptable from day one, you need an EV cert delivered on a hardware token, and signing has to happen on a machine that can talk to the token. That changes the runner story — you'll need a self-hosted runner with the token plugged in. For most internal tools, OV + GitHub-hosted runner + a few weeks of "build reputation" is the pragmatic path.
+
+## What I'd do differently
+
+**Move the version bumping out of NSIS rewriting.** The `(Get-Content) -replace ... | Set-Content` dance is fragile. NSIS supports `/D` to define macros from the command line: `makensis /DAPP_VERSION=0.4.2 setup.nsi`. Use that instead. I don't know why I didn't from day one.
+
+**Generate a SHA256 checksum file alongside the installer.** Two extra lines in the workflow, and the people who care about supply-chain hygiene have something to verify against. The people who don't care will ignore it, which costs nothing.
+
+**Pin `softprops/action-gh-release` by SHA, not version tag.** The release-publishing step has write access to your repo. A tag-based pin is mutable. If you care, pin to a specific commit SHA and renovate it explicitly.
+
+## The thing that mattered most
+
+It wasn't the NSIS script or the YAML. It was getting to *one button*: push tag, get installer.
+
+Anything that breaks that — a manual signing step, a flaky path, a version that has to be bumped in three places — turns into the thing you put off doing. The first time you put off shipping for a week because the pipeline is annoying, you've already paid more in lost iteration than the pipeline cost to build. Fix it once, then never think about it again.

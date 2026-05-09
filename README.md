@@ -94,7 +94,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 ## 📧 Contact
 
-- Email: tasuke567@gmail.com
+- Email: admin@weydev.com
 - GitHub: [@tasuke567](https://github.com/tasuke567)
 - LinkedIn: [@tasuke567](https://linkedin.com/in/tasuke567)
 

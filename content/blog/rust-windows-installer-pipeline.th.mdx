@@ -1,0 +1,202 @@
+<h2 id="what-this-is-about-th">เรื่องที่จะคุย</h2>
+
+คุณเขียนแอพ Rust เสร็จ. มันรันใน local ด้วย `cargo run`. ทีนี้ต้อง ship ให้คนที่ไม่มี Rust toolchain — operations ทีมที่จะดับเบิลคลิก installer, เห็น SmartScreen warning, กด "More info → Run anyway", แล้วคาดหวังให้แอพอยู่ใน Start menu. ทุก tag บน `main` ต้องสร้าง installer ใหม่.
+
+ชิ้นส่วน — `cargo build --release`, NSIS, GitHub Actions, code signing, versioning — แต่ละอันมี doc แยกใช้งานได้. trick คือร้อยเข้าด้วยกัน ให้ non-engineer ติดตั้งจากลิงก์, และให้ *คุณ* ship version ใหม่ได้โดยไม่ต้องแตะ installer script.
+
+นี่คือ pipeline ที่ผมลงตัวหลังหลายรอบจน opinionated.
+
+<h2 id="why-nsis-th">ทำไมเลือก NSIS</h2>
+
+มี 3 ตัวเลือกจริง ๆ สำหรับ Windows installer: NSIS, WiX/MSI, และ bundlers อย่าง `cargo-wix` หรือ `tauri-bundler`.
+
+- **WiX/MSI** คือสิ่งที่ enterprise คาดหวัง. รองรับ group policy, MSI uninstall semantics, ครบทุกอย่างที่ IT department สนใจ. อีกด้านคือยุ่งสุด ๆ — XML, GUID เต็มไปหมด, พิธีกรรมเยอะต่อ file 1 ตัว
+- **`cargo-wix`** ห่อ WiX ตัดความเจ็บได้บางส่วน แต่ยังต้องแลกกับความ strict ของ MSI. คำตอบที่ใช่ถ้า installer ต้องผ่าน corporate IT
+- **`tauri-bundler`** ดีมากถ้าใช้ Tauri อยู่แล้ว. ถ้าไม่ใช่, import มาเฉพาะเพื่อ bundler รู้สึกหางส่ายหมา
+- **NSIS** เป็นภาษา scripting เล็ก ๆ ที่สร้าง `.exe` ตัวเดียว. Script อ่านเหมือน shell, output EXE ขนาดเล็ก, ภาษามันนิ่งมาเป็นทศวรรษ. ข้อเสียคือ procedural และมันโชว์
+
+สำหรับ internal-tools และ prosumer apps ส่วนใหญ่ NSIS เป็น default ที่ถูก. เราเลือกเพราะเหตุผลหนึ่งที่กลายเป็นสำคัญ: **operations user อยากดับเบิลคลิก EXE** ไม่อยากถูกถามเรื่อง elevation, MSI policies, transformations. NSIS แค่รัน.
+
+<h2 id="the-pipeline-shape-th">หน้าตา pipeline</h2>
+
+```
+cargo build --release
+        │
+        ▼
+  target/release/myapp.exe
+        │
+        ├──► sign (signtool ด้วย cert)
+        │
+        ▼
+  makensis installer.nsi  (รับ exe ที่ sign แล้ว)
+        │
+        ▼
+  myapp-vX.Y.Z-setup.exe
+        │
+        ├──► sign (signtool อีกรอบ — installer ต้อง sign แยก)
+        │
+        ▼
+  upload ขึ้น GitHub release
+```
+
+Sign สองรอบไม่ใช่พิมพ์ผิด. Inner binary ต้อง sign เพื่อไม่ให้ SmartScreen เห่าหลังติดตั้ง, และตัว installer EXE เองต้อง sign เพื่อไม่ให้เห่าตอนรัน. ข้ามอันใดอันหนึ่ง = ใช้เวลา 1 ปีอธิบาย "กด More info → Run anyway" ใน support thread.
+
+<h2 id="the-nsis-script-th">สคริปต์ NSIS</h2>
+
+ทั้งสคริปต์ของแอพจริงประมาณ 80 บรรทัด. นี่คือกระดูก:
+
+```nsis
+!define APP_NAME "MyApp"
+!define APP_VERSION "0.0.0"          ; เขียนทับโดย CI ก่อนเรียก makensis
+!define APP_PUBLISHER "Me"
+!define APP_EXE "myapp.exe"
+
+Name        "${APP_NAME}"
+OutFile     "myapp-v${APP_VERSION}-setup.exe"
+InstallDir  "$LOCALAPPDATA\${APP_NAME}"
+RequestExecutionLevel user            ; per-user, ไม่มี UAC prompt
+
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
+
+Section "Install"
+  SetOutPath "$INSTDIR"
+  File "..\target\release\${APP_EXE}"
+  File /r "..\assets"
+
+  CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+  CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "DisplayName" "${APP_NAME}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "DisplayVersion" "${APP_VERSION}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "Publisher" "${APP_PUBLISHER}"
+SectionEnd
+
+Section "Uninstall"
+  Delete "$INSTDIR\${APP_EXE}"
+  RMDir /r "$INSTDIR\assets"
+  Delete "$INSTDIR\Uninstall.exe"
+  RMDir "$INSTDIR"
+  Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
+  RMDir "$SMPROGRAMS\${APP_NAME}"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+SectionEnd
+```
+
+3 จุดน่ากล่าวถึง:
+
+**`RequestExecutionLevel user`.** Per-user install หมายถึงไม่มี UAC prompt ตอนติดตั้ง และแอพอยู่ที่ `%LOCALAPPDATA%`. ถูกสำหรับเครื่องมือที่ user ติดตั้งเองบนเครื่องตัวเอง. ถ้า ship ให้ lab ที่ IT ติดตั้งครั้งเดียวให้หลายคน ใช้ `admin` + `$PROGRAMFILES`.
+
+**`HKCU` (current user) registry, ไม่ใช่ `HKLM`.** ตรงกับ per-user install. ถ้าเขียน `HKLM` uninstaller จะไม่มีสิทธิ์ลบเพราะ installer เป็น per-user.
+
+**Macro `${APP_VERSION}`.** อย่า hard-code. CI เขียนทับจาก cargo version (หรือ git tag) ก่อนเรียก `makensis`. จะคุยถึงในหัวข้อต่อไป.
+
+<h2 id="the-github-actions-workflow-th">GitHub Actions workflow</h2>
+
+นี่คือเวอร์ชันที่ผมกลับมาใช้:
+
+```yaml
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write          # ต้องการเพื่อสร้าง release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart("v")
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Sign binary
+        env:
+          CERT_B64: ${{ secrets.SIGNING_CERT_PFX }}
+          CERT_PWD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String($env:CERT_B64)
+          [IO.File]::WriteAllBytes("cert.pfx", $bytes)
+          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" `
+            sign /f cert.pfx /p $env:CERT_PWD /tr http://timestamp.digicert.com `
+            /td sha256 /fd sha256 target\release\myapp.exe
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          (Get-Content installer\setup.nsi) `
+            -replace '!define APP_VERSION "0.0.0"', `
+                    '!define APP_VERSION "${{ steps.ver.outputs.version }}"' `
+            | Set-Content installer\setup.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer\setup.nsi
+
+      - name: Sign installer
+        env:
+          CERT_PWD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" `
+            sign /f cert.pfx /p $env:CERT_PWD /tr http://timestamp.digicert.com `
+            /td sha256 /fd sha256 `
+            "installer\myapp-v${{ steps.ver.outputs.version }}-setup.exe"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/myapp-v*.exe
+          draft: false
+          generate_release_notes: true
+```
+
+รูปร่างที่กว่าจะลงตัวต้องลองหลายรอบ:
+
+- **Tag-driven, ไม่ใช่ commit-driven.** Push tag อย่าง `v0.4.2` คือสิ่งเดียวที่ trigger release. Build บน `main` รัน CI แต่ไม่ ship
+- **Single Windows runner.** Cross-compile Rust binary สำหรับ Windows จาก Linux ได้ แต่เปิด long tail ของ "ที่เครื่องผมรันได้". `windows-latest` คือทางที่เซอร์ไพรส์น้อยสุด
+- **`--locked` ตอน build.** บังคับ CI ใช้ `Cargo.lock` ที่ commit ไว้. ถ้า transitive dep ถูก bump ใน crates.io ระหว่าง test ใน local กับ run ของ CI, `--locked` จับได้
+- **`Swatinem/rust-cache`.** ถ้าไม่มี ทุก release rebuild ทุก dep. ถ้ามี release ลดจาก 8 นาทีเหลือประมาณ 90 วิสำหรับ incremental change
+
+<h2 id="the-signing-trap-th">หลุมเรื่อง signing</h2>
+
+หลุมใหญ่สุดคือ cert. 2 อย่างที่ควรรู้ตั้งแต่ต้น:
+
+1. **OV (organization-validated) cert พอที่จะให้ SmartScreen warning หายไปภายในไม่กี่สัปดาห์ของจำนวน install.** EV cert ทำให้หายทันทีแต่แพง 3-5×. สำหรับ internal tool, OV ใช้ได้
+2. **`signtool.exe` อยู่คนละที่ใน Windows SDK แต่ละ version**. Hard-code path (เหมือน workflow ด้านบน) เปราะ. เวอร์ชันที่ทนกว่าใช้ `Get-ChildItem` หาเอง — แต่ก็ต้อง maintain script. เลือกเอา
+
+ถ้า ship อะไรที่ SmartScreen warning รับไม่ได้ตั้งแต่วันแรก ต้องใช้ EV cert ที่อยู่บน hardware token, signing ต้องเกิดบนเครื่องที่คุยกับ token ได้. นั่นเปลี่ยน runner story — ต้องใช้ self-hosted runner ที่ token เสียบอยู่. สำหรับ internal tool ส่วนใหญ่ OV + GitHub-hosted runner + รอ 2-3 สัปดาห์ "build reputation" คือทาง pragmatic.
+
+<h2 id="what-id-do-differently-th">ถ้าทำใหม่จะเปลี่ยนอะไร</h2>
+
+**ย้าย version bumping ออกจากการเขียนทับ NSIS.** การเต้น `(Get-Content) -replace ... | Set-Content` เปราะ. NSIS รองรับ `/D` define macro จาก command line: `makensis /DAPP_VERSION=0.4.2 setup.nsi`. ใช้แทน. ไม่รู้ว่าทำไมไม่ทำตั้งแต่วันแรก.
+
+**สร้าง SHA256 checksum file คู่กับ installer.** เพิ่ม 2 บรรทัดใน workflow, คนที่สนใจ supply-chain hygiene มีของให้ verify. คนที่ไม่สน ก็ ignore — ไม่เสียอะไร.
+
+**Pin `softprops/action-gh-release` ด้วย SHA, ไม่ใช่ version tag.** Release-publishing step มีสิทธิ์เขียน repo. Tag-based pin mutable. ถ้าแคร์ pin ที่ commit SHA และ renovate ตามตั้งใจ.
+
+<h2 id="the-thing-that-mattered-most-th">สิ่งที่สำคัญที่สุด</h2>
+
+มันไม่ใช่ NSIS script หรือ YAML. มันคือการได้ *ปุ่มเดียว*: push tag, ได้ installer.
+
+อะไรก็ตามที่ทำลายสิ่งนั้น — manual signing step, path เปราะ, version ที่ต้อง bump 3 ที่ — กลายเป็นสิ่งที่คุณผัดวันประกันพรุ่ง. ครั้งแรกที่ผัดการ ship ไป 1 สัปดาห์เพราะ pipeline น่ารำคาญ คุณเสียเวลา iteration มากกว่าที่ pipeline จะใช้สร้าง. แก้ครั้งเดียว, แล้วไม่ต้องคิดถึงอีก.

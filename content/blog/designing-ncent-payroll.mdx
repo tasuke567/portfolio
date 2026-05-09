@@ -1,0 +1,84 @@
+## The constraint
+
+NCENT serves more than 2,000 employees across NC Entertainment's operations. Payroll runs at month-end and has to reconcile shifts, expenses, KPI bonuses, leave accruals, and a long tail of ad-hoc adjustments. Every cell on every payslip is the result of a chain of decisions, and any one of them being wrong is a Slack ping at 11pm.
+
+When I joined, the existing flow was a sequence of imperative passes — fetch shifts, compute base, apply OT, deduct, apply tax, apply benefits, save. Each pass mutated a shared payroll record. It worked at 600 employees and started limping at 1,200.
+
+## What broke
+
+What broke first wasn't compute time. It was *traceability*.
+
+When a payslip looked wrong, you had to walk an analyst back through five mutating passes to find which one introduced the bad number. Half the time the answer was "step 3 read a value that step 2 didn't finish writing." Reproducing required a full re-run — ten seconds per employee. Painful at 1,200, untenable at 2,000.
+
+Two things were structural:
+
+- **Mutation hides causality.** If step 3 sees the wrong number, you can't tell whether step 2 wrote it or step 1 wrote it and step 2 didn't overwrite.
+- **Sequential coupling masks parallelism.** Two-thirds of the passes had no real dependency on each other. The pipeline was sequential because *the data structure forced it to be*, not because the domain demanded it.
+
+## The shape we landed on
+
+We rewrote the engine around a single idea: **a payroll run is a pure function from inputs to a resolved record**, and the pipeline is a graph of named resolvers, each one publishing to a typed slot.
+
+```
+inputs ─┐
+        ├─► baseResolver  ──► slot:base
+        ├─► overtimeResolver ──► slot:overtime
+        ├─► leaveResolver ──► slot:leave
+slots:base ──┐
+slots:overtime ──┼─► taxResolver ──► slot:tax
+slots:leave ──┘
+... and so on
+```
+
+A few things fall out of this naturally:
+
+1. **Each resolver declares its inputs.** It doesn't reach into a shared object — it asks the engine for `slot:base`, and if that slot hasn't been published, it suspends until it is. This makes the dependency graph explicit and toposortable.
+2. **Slots are immutable once written.** A resolver can't accidentally trample another resolver's output. If two resolvers want to write the same slot, that's a hard error at registration time, not a 11pm Slack ping.
+3. **Independent resolvers run in parallel.** The engine walks the graph and dispatches anything whose inputs are ready. On a typical run roughly half the resolvers are independent.
+
+In Angular, the resolver registry was a small DI-friendly thing — each resolver implemented `Resolver<TIn, TOut>` and got registered into a `PayrollEngine` token. The engine itself was an RxJS operator: input stream in, resolved-record stream out, with a `scan` accumulating slots and a `combineLatest` per resolver gating on its declared inputs.
+
+## What RxJS bought us
+
+People are skeptical of RxJS for business logic and they should be — most of the time it's the wrong tool. For this it was the right tool, for one specific reason: **the payroll engine is fundamentally a fan-out / fan-in computation over streams of changes**.
+
+When an HR analyst tweaks a single employee's overtime override, we don't want to recompute the entire batch. We want to invalidate exactly the slots downstream of that input, recompute them, and propagate. RxJS gives you that for free if you model slots as `BehaviorSubject`s and resolvers as operators that subscribe to their declared inputs.
+
+The thing to be careful about is hot-vs-cold. Each slot is a hot subject (multicast, latest-value-wins). Each resolver is a cold operator that becomes hot when subscribed by the engine. Mixing those up the wrong way gives you either replays-on-every-employee (catastrophic) or stale reads (worse — silently catastrophic).
+
+## What it looks like in practice
+
+A resolver, end to end:
+
+```ts
+@Injectable()
+export class OvertimeResolver implements Resolver<OTInputs, Money> {
+  readonly slot = "overtime" as const;
+  readonly inputs = ["base", "shifts", "policy"] as const;
+
+  resolve({ base, shifts, policy }: OTInputs): Money {
+    if (!policy.overtimeEnabled) return Money.zero(base.currency);
+    const otHours = shifts.reduce(
+      (acc, s) => acc + Math.max(0, s.hours - policy.dailyCap),
+      0,
+    );
+    return base.rate.times(otHours).times(policy.multiplier);
+  }
+}
+```
+
+The resolver is pure and trivially testable. Every payroll bug we've shipped since the rewrite has been reproducible from a frozen `OTInputs` object — no database, no clock, no auth context, just inputs in, money out.
+
+## What I'd do differently
+
+Two things, in retrospect:
+
+**Slot versions.** We didn't version slot shapes. When we changed the shape of `slot:overtime` to include a breakdown of which shifts contributed, every resolver downstream silently kept reading the old shape via TypeScript's structural typing. The fix was to brand each slot with a version literal and bump it on shape changes. Simple, but I wish I'd done it from day one.
+
+**A standalone replay tool.** Right now to reproduce a payroll bug you spin up the full app. We should have built a tiny CLI that loads a frozen run from JSON, executes the engine, and diffs against the stored output. The investment would have paid for itself within a month. I'm building it now.
+
+## The thing that mattered most
+
+It wasn't RxJS. It wasn't the resolver graph. It was the move from "mutating shared state" to "publishing to named slots." Once that was in place, parallelism, traceability, and partial-recompute fell out for free.
+
+If you're building a domain engine where the business analysts care more about *why* a number is what it is than how fast it gets there — make causality cheap to recover. Everything else is downstream of that.
