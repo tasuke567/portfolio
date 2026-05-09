@@ -19,6 +19,14 @@
   }
 }
 
+html,
+body {
+  /* Prevent any rogue child width (giant headlines, code blocks, embeds)
+     from spilling past the viewport on small screens. */
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
